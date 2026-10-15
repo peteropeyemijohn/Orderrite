@@ -25,6 +25,7 @@ export async function proxy(request: NextRequest) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ refreshToken }),
       cache: 'no-store',
+      signal: AbortSignal.timeout(70_000), // the free API server can take a while to wake up
     });
     if (response.status === 401 || response.status === 400) return redirectToLogin(request);
     if (!response.ok) return NextResponse.next(); // API trouble: let the page show its error state

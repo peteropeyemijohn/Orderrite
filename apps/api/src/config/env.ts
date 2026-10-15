@@ -24,8 +24,15 @@ const envSchema = z
     DATABASE_URL: z.string().min(1, 'DATABASE_URL is missing. Copy it from Neon into apps/api/.env'),
     /** Comma-separated list of web addresses allowed to call the API from a browser */
     CORS_ORIGINS: z.string().default('http://localhost:3000'),
-    /** How many proxies sit in front of the API (0 locally, 1 on Render) */
+    /** How many proxies sit in front of the API (0 locally; measured on Render with IP_DEBUG) */
     TRUST_PROXY_HOPS: z.coerce.number().int().min(0).default(0),
+    /**
+     * Optional: read the visitor IP from this header instead (e.g. "cf-connecting-ip"),
+     * only if the hosting edge always overwrites it. Leave empty unless IP_DEBUG showed it is safe.
+     */
+    CLIENT_IP_HEADER: z.string().toLowerCase().optional(),
+    /** Temporarily turns on GET /health/ip to check visitor IP detection after deploy. */
+    IP_DEBUG: booleanFromString,
     /** Demo deployment only. Never true in a real launch. */
     DEMO_MODE: booleanFromString,
 

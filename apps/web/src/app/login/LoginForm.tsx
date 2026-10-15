@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { en, type PublicConfig } from 'shared';
+import { useSlowHint } from '@/lib/useSlowHint';
 import { loadPublicConfig, requestCode, verifyCode } from './actions';
 
 type Step = { name: 'phone' } | { name: 'code'; phone: string };
@@ -22,6 +23,7 @@ export function LoginForm() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [resendIn, setResendIn] = useState(0);
+  const slowAction = useSlowHint(busy);
 
   useEffect(() => {
     let active = true;
@@ -96,6 +98,7 @@ export function LoginForm() {
       {config.demo && (
         <p className="rounded-2xl bg-amber-100 p-4 font-semibold text-amber-900">{en.auth.demoBanner(config.demo.code)}</p>
       )}
+      {slowAction && <p className="text-neutral-500" role="status">{en.common.firstLoadSlow}</p>}
 
       {step.name === 'phone' ? (
         <form

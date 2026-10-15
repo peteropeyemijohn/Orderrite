@@ -1,6 +1,10 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from '@/auth/AuthProvider';
+import { wakeApi } from '@/lib/api';
+
+// Start waking the free API server as soon as the app opens.
+wakeApi();
 
 /**
  * Each group of screens is only reachable by the right people:

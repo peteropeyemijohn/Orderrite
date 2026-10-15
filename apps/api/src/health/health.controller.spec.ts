@@ -5,7 +5,7 @@ import type { PrismaService } from '../prisma/prisma.service.js';
 
 function makeController(queryRaw: () => Promise<unknown>) {
   const prisma = { $queryRaw: queryRaw } as unknown as PrismaService;
-  return new HealthController(prisma);
+  return new HealthController(prisma, { IP_DEBUG: false, TRUST_PROXY_HOPS: 0 });
 }
 
 function makeResponse() {
@@ -29,5 +29,13 @@ describe('HealthController', () => {
 
     expect(report).toMatchObject({ status: 'error', database: 'error' });
     expect(res.status).toHaveBeenCalledWith(HttpStatus.SERVICE_UNAVAILABLE);
+  });
+
+  it('has a database-free liveness check', () => {
+    expect(makeController(() => Promise.reject(new Error('down'))).live()).toEqual({ status: 'ok' });
+  });
+
+  it('hides the IP diagnostic unless IP_DEBUG is on', () => {
+    expect(() => makeController(() => Promise.resolve([])).ip({} as never)).toThrow();
   });
 });

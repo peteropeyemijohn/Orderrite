@@ -13,6 +13,9 @@
     "db:seed": "pnpm --filter api db:seed",
     "check-secrets": "node scripts/check-secrets.mjs",
     "prepare": "(git config core.hooksPath .githooks || true) && pnpm build:shared",
-    "lint": "pnpm -r --if-present lint"
+    "lint": "pnpm -r --if-present lint",
+    "demo:db:reset": "node scripts/demo-db.mjs reset",
+    "demo:db:seed": "node scripts/demo-db.mjs seed",
+    "check-ip": "node scripts/check-ip-limit.mjs"
   }
 }

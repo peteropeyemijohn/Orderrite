@@ -29,7 +29,7 @@ export const AUTH_IP_LIMITS = {
 export class AuthController {
   constructor(
     private readonly auth: AuthService,
-    @Inject(ENV) private readonly env: Pick<Env, 'WEB_PROXY_SECRET'>,
+    @Inject(ENV) private readonly env: Pick<Env, 'WEB_PROXY_SECRET' | 'CLIENT_IP_HEADER'>,
   ) {}
 
   /** Step 1: send a sign-in code to a phone number. */
@@ -38,7 +38,7 @@ export class AuthController {
   @Post('otp/request')
   @HttpCode(HttpStatus.OK)
   requestCode(@Body(new ZodValidationPipe(requestCodeSchema)) body: RequestCodeBody, @Req() req: Request) {
-    return this.auth.requestCode(body.phone, getClientIp(req, this.env.WEB_PROXY_SECRET));
+    return this.auth.requestCode(body.phone, getClientIp(req, this.env));
   }
 
   /** Step 2: check the code and start a session. */

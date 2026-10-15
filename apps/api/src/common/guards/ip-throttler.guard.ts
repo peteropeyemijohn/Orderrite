@@ -12,12 +12,12 @@ export class IpThrottlerGuard extends ThrottlerGuard {
     options: ThrottlerModuleOptions,
     storage: ThrottlerStorage,
     reflector: Reflector,
-    @Inject(ENV) private readonly env: Pick<Env, 'WEB_PROXY_SECRET'>,
+    @Inject(ENV) private readonly env: Pick<Env, 'WEB_PROXY_SECRET' | 'CLIENT_IP_HEADER'>,
   ) {
     super(options, storage, reflector);
   }
 
   protected override getTracker(req: Record<string, unknown>): Promise<string> {
-    return Promise.resolve(getClientIp(req as unknown as Request, this.env.WEB_PROXY_SECRET));
+    return Promise.resolve(getClientIp(req as unknown as Request, this.env));
   }
 }

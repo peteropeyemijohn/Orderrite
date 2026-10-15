@@ -5,6 +5,12 @@ import { API_URL, WEB_PROXY_SECRET } from './server-config';
 export type ApiResult<T> = { ok: true; data: T } | { ok: false; error?: ApiErrorBody };
 
 /**
+ * The free API server sleeps when idle and can take up to about a minute to
+ * wake, so allow 70 seconds before giving up.
+ */
+const API_TIMEOUT_MS = 70_000;
+
+/**
  * Calls the API from the Next.js server. Never throws: network failures come
  * back as { ok: false } with no error body, so pages can show a friendly message.
  */
@@ -26,6 +32,7 @@ export async function callApi<T>(
       headers,
       body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
       cache: 'no-store',
+      signal: AbortSignal.timeout(API_TIMEOUT_MS),
     });
     if (response.status === 204) return { ok: true, data: undefined as T };
     const body = (await response.json().catch(() => ({}))) as unknown;

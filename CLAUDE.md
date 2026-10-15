@@ -88,7 +88,9 @@ Launch city is Akure, Nigeria, but the product will expand to other Nigerian cit
 - Type check: `pnpm typecheck`
 - Lint: `pnpm lint`
 - Database: `pnpm db:migrate` (create/apply migrations), `pnpm db:seed`, `pnpm --filter api db:studio`
-- Secret scan: `pnpm check-secrets` (staged files) or `pnpm check-secrets --all`
+- Secret scan: `pnpm check-secrets` (staged files), `pnpm check-secrets --all` (working tree), `pnpm check-secrets --history` (every commit; must pass before any push)
+- Demo database (Neon `demo` branch, via `apps/api/.env.demo`): `pnpm demo:db:reset` / `pnpm demo:db:seed`
+- Live IP rate-limit check: `pnpm check-ip https://<api>.onrender.com [--burst]` (needs `IP_DEBUG=true` on Render)
 - After changing `packages/shared`, rebuild it: `pnpm build:shared`
 
 ## Project notes
@@ -103,3 +105,10 @@ Launch city is Akure, Nigeria, but the product will expand to other Nigerian cit
 - Web session: httpOnly cookies set by the Next.js server (server actions); `src/proxy.ts` refreshes tokens before dashboard pages. The browser never sees tokens. Web needs `API_URL` (server-only).
 - Mobile session: refresh token in expo-secure-store, access token in memory (`src/auth/AuthProvider.tsx`). Screen groups are guarded by role with `Stack.Protected` in `src/app/_layout.tsx`. Rider code lives in `src/rider` and `src/app/(rider)`.
 - Tests use in-memory fakes (`apps/api/src/test-utils/fakes.ts`), not the real database.
+
+## Deployment (Phase 2b)
+- Public demo only: API on Render (`render.yaml`, Frankfurt, free), web on Vercel (`apps/web/vercel.json`, root dir `apps/web`, region fra1), Android APK via EAS (`apps/mobile/eas.json`, profile `preview`). All use `DEMO_MODE=true` and the Neon **demo** branch, never the private branch.
+- Render: health check `/health/live` (no database), builds with `scripts/render-build.sh`, runs migrations + seed on every deploy. No `ADMIN_PHONE` on Render (no real phone numbers on the demo).
+- Build servers fetch pnpm with `npx --yes pnpm@12.11.2` (they don't have pnpm); everything else uses pnpm.
+- Visitor IP for rate limiting: `TRUST_PROXY_HOPS` / `CLIENT_IP_HEADER`, verified live with `/health/ip` while `IP_DEBUG=true`. Keep `IP_DEBUG=false` otherwise.
+- Free tier sleeps: apps show a "waking up" hint after 5 s and wait up to 70 s.

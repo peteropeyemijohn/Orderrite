@@ -8,7 +8,7 @@ Status key: ⬜ not started · 🟨 in progress · ✅ done
 |---|---|---|
 | 1 | Project setup and database (local only) | ✅ |
 | 2 | Phone login | ✅ |
-| 2b | Deploy a test environment | ⬜ |
+| 2b | Deploy a test environment | 🟨 |
 | 3 | Design system | ⬜ |
 | 4 | Admin panel, vendor dashboard and seed data | ⬜ |
 | 5 | Customer browsing and cart | ⬜ |
@@ -44,20 +44,39 @@ Goal: the app works without the owner's laptop, for a remote testing partner and
 - **Web on Vercel (free Hobby plan).** It also builds from GitHub. The vendor dashboard and admin panel get a public `*.vercel.app` address.
 - **Database: Neon.** One separate Neon branch (a copy of the database) for the demo, so local experiments never break the live demo.
 - ⚠️ **The public demo must use its own separate database** (for example a separate Neon branch with its own connection strings). Demo visitors must never touch the owner's private test data, and the private database must never have `DEMO_MODE` data seeded into it. Render's `DATABASE_URL` / `DIRECT_URL` must point at the demo branch only.
-- **Mobile: Android APK via EAS Build** (Expo's cloud build service, free plan). We make a "preview" build that points at the Render API. EAS gives a download link and QR code, and testers install the APK directly (they allow "install unknown apps" once). There is no Play Store account and no laptop involved. iOS testers are not possible without a paid Apple account, so iOS is out of scope for Plan A.
+- **Mobile: Android APK via EAS Build** (Expo's cloud build service, free plan). The API address for the build is set in `apps/mobile/eas.json`, so the laptop's `apps/mobile/.env` keeps working for local development. We make a "preview" build that points at the Render API. EAS gives a download link and QR code, and testers install the APK directly (they allow "install unknown apps" once). There is no Play Store account and no laptop involved. iOS testers are not possible without a paid Apple account, so iOS is out of scope for Plan A.
 - Small changes to screens can later be pushed to installed apps with EAS Update, without a new APK.
 - The public Render address is used as the Paystack webhook URL, so no ngrok is needed.
 
-**Settings to set during deploy (from Phase 2)**
-- Render (API): `NODE_ENV=production`, `TRUST_PROXY_HOPS=1`, `DEMO_MODE=true`, new `JWT_ACCESS_SECRET` and `OTP_HASH_SECRET` (different from the laptop ones), `CORS_ORIGINS` = the Vercel address, `WEB_PROXY_SECRET`, and the demo-branch database URLs.
-- Vercel (web): `API_URL` = the Render address, and the same `WEB_PROXY_SECRET` as Render. Without it, every web visitor shares the Vercel server's IP for rate limiting.
-- EAS build profile (mobile): `EXPO_PUBLIC_API_URL` = the Render address.
-- Run the seed on the demo branch with `DEMO_MODE=true` to create the demo accounts. Real admin/vendor/rider accounts on the demo still need a real code, read from Render's logs.
+**Deploy guide (step by step)**
+
+*Files:* `render.yaml` (Render Blueprint), `scripts/render-build.sh`, `apps/web/vercel.json`, `apps/mobile/eas.json`, `scripts/demo-db.mjs`, `scripts/check-ip-limit.mjs`.
+
+1. **History scan before the first push:** `pnpm check-secrets --history` must pass. Then `git push -u origin main`.
+2. **Demo database branch.** Neon → Branches → New branch `demo` (parent `main`). It starts as a copy of main, so wipe it: put the demo branch's pooled and direct strings in `apps/api/.env.demo` (git-ignored) as `DATABASE_URL` and `DIRECT_URL`, then run `pnpm demo:db:reset` (type `demo` to confirm). The script refuses to run against the private database, forces `DEMO_MODE=true`, and never seeds a real `ADMIN_PHONE`.
+3. **Render** → New → Blueprint → the repo. Paste the `sync: false` values. Use **fresh** secrets (`openssl rand -base64 48 | pbcopy`, a new run per secret), and use the same `WEB_PROXY_SECRET` value on Vercel. Set `CORS_ORIGINS=https://example.invalid` until the Vercel address exists. Every deploy runs `prisma migrate deploy` and the seed (both safe to repeat).
+   - Check: `https://<api>.onrender.com/health` → `{"status":"ok","database":"ok"}`. Logs show `Sign-in codes: demo`.
+4. **Vercel** → Add New → Project → the repo, **Root Directory `apps/web`**. Environment Variables: `API_URL` = the Render address, and `WEB_PROXY_SECRET`. Then set Render's `CORS_ORIGINS` to the exact Vercel address.
+   - Check: the login page shows the DEMO banner. Admin demo account + `123456` → "Welcome, Admin".
+5. **IP check** (Render has `IP_DEBUG=true` for now): run `pnpm check-ip https://<api>.onrender.com`. Steps 1–2 must pass. If step 1 shows a Render internal IP, raise `TRUST_PROXY_HOPS` by one and re-check (or use `CLIENT_IP_HEADER` if the output shows a header that the edge sets and that ignores the fake value). Then `pnpm check-ip … --burst` and confirm a phone on mobile data can still request a code. **Afterwards set `IP_DEBUG=false` on Render.**
+6. **Android build:** put the Render address in `apps/mobile/eas.json` (`EXPO_PUBLIC_API_URL`, not a secret). In `apps/mobile`: `pnpm dlx eas-cli@24.14.0 login`, `pnpm dlx eas-cli@24.14.0 init`, then `pnpm dlx eas-cli@24.14.0 build -p android --profile preview` (let EAS create and keep the signing key). Share the link it prints.
+7. **README:** fill in the live links. Secret scan, commit, push.
+
+**Which Neon string goes where**
+
+| Neon string | Laptop `apps/api/.env` | `apps/api/.env.demo` | Render |
+|---|---|---|---|
+| main, pooled | `DATABASE_URL` | ✗ | ✗ |
+| main, direct | `DIRECT_URL` | ✗ | ✗ |
+| demo, pooled | ✗ | `DATABASE_URL` | `DATABASE_URL` |
+| demo, direct | ✗ | `DIRECT_URL` | `DIRECT_URL` |
+
+**Demo admin:** Render has **no** `ADMIN_PHONE`, so the public demo has no real phone numbers at all. The seed skips the real-admin step when `DEMO_MODE=true` and `ADMIN_PHONE` is empty. The demo admin (+234 000 000 0004) is the admin on the demo. The owner's real admin exists only on the private branch.
 
 **DEMO_MODE (demo deployment only)**
 - `DEMO_MODE=true` only in the Render demo service. It defaults to false.
 - Creates demo accounts (customer, rider, vendor, admin) with a published fixed login code, plus seeded test vendors and menus.
-- Demo accounts can be reset by re-running the demo seed.
+- Demo accounts can be reset with `pnpm demo:db:reset` (wipes the demo branch) or refreshed with `pnpm demo:db:seed`.
 - Rate limiting stays on, even in demo mode.
 - The API refuses to start with `DEMO_MODE=true` together with live Paystack keys.
 - **Never enable DEMO_MODE in a real launch.**

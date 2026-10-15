@@ -4,6 +4,7 @@ import { authErrorMessage, en, type RequestCodeResponse, type SessionResponse } 
 import { useAuth } from '@/auth/AuthProvider';
 import { Body, Button, ErrorText, Input, Screen, Title } from '@/components/ui';
 import { apiRequest, errorBody } from '@/lib/api';
+import { useSlowHint } from '@/lib/useSlowHint';
 
 export default function CodeScreen() {
   const params = useLocalSearchParams<{ phone: string; resendIn?: string }>();
@@ -13,6 +14,7 @@ export default function CodeScreen() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [resendIn, setResendIn] = useState(Number(params.resendIn ?? 60));
+  const slow = useSlowHint(busy);
 
   // Countdown until a new code can be requested.
   useEffect(() => {
@@ -66,6 +68,7 @@ export default function CodeScreen() {
         autoFocus
       />
       {error && <ErrorText>{error}</ErrorText>}
+      {slow && <Body muted>{en.common.firstLoadSlow}</Body>}
       <Button label={busy ? en.auth.verifying : en.auth.verify} onPress={() => void verify()} disabled={busy || code.length !== 6} />
       <Button
         variant="secondary"

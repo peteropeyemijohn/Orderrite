@@ -4,6 +4,8 @@
 // Adds: Nigeria (the default country), Akure (active, Food only) with its fee
 // settings, and the first admin user from ADMIN_PHONE.
 // Only when DEMO_MODE=true: the demo accounts (never in a private database).
+// In DEMO_MODE, ADMIN_PHONE is optional and normally left out: the public demo
+// uses the demo admin account, so no real phone number is stored there.
 // Test vendors come in Phase 4.
 import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
@@ -14,8 +16,9 @@ import { DEMO_ACCOUNTS } from '../src/auth/demo-accounts.js';
 const E164 = /^\+[1-9]\d{7,14}$/;
 
 async function main() {
-  const adminPhone = process.env.ADMIN_PHONE?.trim();
-  if (!adminPhone || !E164.test(adminPhone)) {
+  const demoMode = process.env.DEMO_MODE === 'true';
+  const adminPhone = process.env.ADMIN_PHONE?.trim() || undefined;
+  if (adminPhone ? !E164.test(adminPhone) : !demoMode) {
     throw new Error(
       'ADMIN_PHONE is missing or invalid in apps/api/.env. Use international format, e.g. +2348012345678',
     );
@@ -73,15 +76,20 @@ async function main() {
       },
     });
 
-    const admin = await prisma.user.upsert({
-      where: { phone: adminPhone },
-      update: { role: 'ADMIN' },
-      create: { phone: adminPhone, name: 'Admin', role: 'ADMIN' },
-    });
+    let adminSummary = 'no real admin (demo admin only)';
+    if (adminPhone) {
+      const admin = await prisma.user.upsert({
+        where: { phone: adminPhone },
+        update: { role: 'ADMIN' },
+        create: { phone: adminPhone, name: 'Admin', role: 'ADMIN' },
+      });
+      // Only show the start and last 4 digits of the phone number in logs.
+      adminSummary = `admin ${admin.phone.slice(0, 4)}…${admin.phone.slice(-4)}`;
+    }
 
     // Demo accounts: ONLY when DEMO_MODE is exactly "true".
     let demoSummary = '';
-    if (process.env.DEMO_MODE === 'true') {
+    if (demoMode) {
       console.warn('DEMO_MODE=true: creating demo accounts. Never do this in a private or real database.');
       for (const account of DEMO_ACCOUNTS) {
         const demoUser = await prisma.user.upsert({
@@ -100,9 +108,7 @@ async function main() {
       demoSummary = `, ${DEMO_ACCOUNTS.length} demo accounts`;
     }
 
-    // Only show the last 4 digits of the phone number in logs.
-    const maskedPhone = `${admin.phone.slice(0, 4)}…${admin.phone.slice(-4)}`;
-    console.log(`Seeded ${nigeria.name}, ${akure.name} (active), admin ${maskedPhone}${demoSummary}`);
+    console.log(`Seeded ${nigeria.name}, ${akure.name} (active), ${adminSummary}${demoSummary}`);
   } finally {
     await prisma.$disconnect();
   }

@@ -1,0 +1,47 @@
+# Render Blueprint for the Orderrite API (public demo).
+# Values marked "sync: false" are secrets: Render asks for them in its dashboard
+# when the Blueprint is first created. They are never stored in this file.
+services:
+  - type: web
+    name: orderrite-api
+    runtime: node
+    plan: free
+    # Closest Render region to the Neon database in London (eu-west-2).
+    region: frankfurt
+    branch: main
+    buildCommand: bash scripts/render-build.sh
+    startCommand: node apps/api/dist/main.js
+    # Database-free check, so Render's frequent checks don't keep Neon awake.
+    healthCheckPath: /health/live
+    autoDeployTrigger: commit
+    buildFilter:
+      paths:
+        - apps/api/**
+        - packages/shared/**
+        - scripts/render-build.sh
+        - render.yaml
+        - pnpm-lock.yaml
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "24"
+      - key: DEMO_MODE
+        value: "true"
+      # Measured after the first deploy with IP_DEBUG (see docs/PHASES.md).
+      - key: TRUST_PROXY_HOPS
+        value: "1"
+      - key: IP_DEBUG
+        value: "true"
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: JWT_ACCESS_SECRET
+        sync: false
+      - key: OTP_HASH_SECRET
+        sync: false
+      - key: WEB_PROXY_SECRET
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false

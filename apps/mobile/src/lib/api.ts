@@ -13,11 +13,20 @@ export class ApiRequestError extends Error {
   }
 }
 
+/**
+ * The free API server sleeps when idle and can take up to about a minute to
+ * wake, so allow 70 seconds before giving up.
+ */
+const API_TIMEOUT_MS = 70_000;
+
 export async function apiRequest<T>(
   path: string,
   options: { method?: 'GET' | 'POST'; body?: unknown; accessToken?: string } = {},
 ): Promise<T> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
   const response = await fetch(`${API_URL}${path}`, {
+    signal: controller.signal,
     method: options.method ?? 'GET',
     headers: {
       Accept: 'application/json',
@@ -25,7 +34,7 @@ export async function apiRequest<T>(
       ...(options.accessToken ? { Authorization: `Bearer ${options.accessToken}` } : {}),
     },
     body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
-  });
+  }).finally(() => clearTimeout(timer));
 
   if (response.status === 204) return undefined as T;
   const body = (await response.json().catch(() => ({}))) as unknown;
@@ -38,4 +47,12 @@ export async function apiRequest<T>(
 /** The API's error body, or undefined for network failures (no answer at all). */
 export function errorBody(error: unknown): ApiErrorBody | undefined {
   return error instanceof ApiRequestError ? error.body : undefined;
+}
+
+/**
+ * Wakes the free API server as early as possible (when the app opens), so it is
+ * more likely to be ready by the time the person taps a button.
+ */
+export function wakeApi(): void {
+  fetch(`${API_URL}/health/live`).catch(() => undefined);
 }

@@ -3,15 +3,17 @@
 // .env file is about to be committed. The repo may become public, so this
 // runs automatically before every commit (see .githooks/pre-commit).
 //
-//   pnpm check-secrets          scan files staged for commit
-//   pnpm check-secrets --all    scan every file in the project (not ignored ones)
+//   pnpm check-secrets            scan files staged for commit
+//   pnpm check-secrets --all      scan every file in the project (not ignored ones)
+//   pnpm check-secrets --history  scan every version of every file in every commit
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
 const scanAll = process.argv.includes('--all');
+const scanHistory = process.argv.includes('--history');
 
-const files = execFileSync(
+const files = scanHistory ? [] : execFileSync(
   'git',
   scanAll
     ? ['ls-files', '--cached', '--others', '--exclude-standard']
@@ -44,29 +46,63 @@ const SKIP = [/(^|\/)pnpm-lock\.yaml$/, /\.(png|jpe?g|gif|webp|ico|icon|ttf|otf|
 
 const problems = [];
 
-for (const file of files) {
+function isForbiddenEnvFile(file) {
   const base = path.basename(file);
-  if (/^\.env(\..+)?$/.test(base) && base !== '.env.example') {
-    problems.push(`${file}: .env files must never be committed`);
-    continue;
-  }
-  if (SKIP.some((pattern) => pattern.test(file)) || !existsSync(file)) continue;
+  return /^\.env(\..+)?$/.test(base) && base !== '.env.example';
+}
 
-  const lines = readFileSync(file, 'utf8').split('\n');
-  lines.forEach((line, index) => {
+function scanText(label, text) {
+  text.split('\n').forEach((line, index) => {
     for (const rule of rules) {
       const matches = rule.regex.global ? [...line.matchAll(rule.regex)] : [line.match(rule.regex)].filter(Boolean);
       if (matches.some((match) => !rule.check || rule.check(match))) {
-        problems.push(`${file}:${index + 1}: possible ${rule.name}`);
+        problems.push(`${label}:${index + 1}: possible ${rule.name}`);
       }
     }
   });
 }
 
+if (scanHistory) {
+  // Every distinct file version (blob) that has ever been in any commit.
+  const git = (args) => execFileSync('git', args, { encoding: 'utf8', maxBuffer: 1024 * 1024 * 512 });
+  const seen = new Set();
+  const commits = git(['rev-list', '--all']).split('\n').filter(Boolean);
+  for (const commit of commits) {
+    for (const entry of git(['ls-tree', '-r', commit]).split('\n').filter(Boolean)) {
+      const [meta, file] = entry.split('\t');
+      const blob = meta.split(' ')[2];
+      if (isForbiddenEnvFile(file)) problems.push(`${file} (commit ${commit.slice(0, 7)}): .env files must never be committed`);
+      if (seen.has(blob) || SKIP.some((pattern) => pattern.test(file))) continue;
+      seen.add(blob);
+      scanText(`${file} (commit ${commit.slice(0, 7)})`, git(['cat-file', '-p', blob]));
+    }
+  }
+  files.push(...seen); // for the summary count
+}
+
+for (const file of files) {
+  if (scanHistory) break;
+  if (isForbiddenEnvFile(file)) {
+    problems.push(`${file}: .env files must never be committed`);
+    continue;
+  }
+  if (SKIP.some((pattern) => pattern.test(file)) || !existsSync(file)) continue;
+  scanText(file, readFileSync(file, 'utf8'));
+}
+
 if (problems.length > 0) {
-  console.error('\n✋ Secret scan FAILED. Nothing was committed.\n');
+  if (scanHistory) {
+    console.error('\n✋ Secret scan FAILED: secrets exist in the git history. Do NOT push.\n');
+  } else {
+    console.error('\n✋ Secret scan FAILED. Nothing was committed.\n');
+  }
   for (const problem of problems) console.error(`  - ${problem}`);
-  console.error('\nRemove the secret (move it to a .env file), then try again.\n');
+  console.error(
+    scanHistory
+      ? '\nDeleting the file is not enough: it is still in old commits. Ask for help to rewrite history, and treat the key as leaked (replace it).\n'
+      : '\nRemove the secret (move it to a .env file), then try again.\n',
+  );
   process.exit(1);
 }
-console.log(`✓ Secret scan passed (${files.length} file${files.length === 1 ? '' : 's'} checked)`);
+const what = scanHistory ? 'file versions across all commits' : files.length === 1 ? 'file' : 'files';
+console.log(`✓ Secret scan passed (${files.length} ${what} checked)`);

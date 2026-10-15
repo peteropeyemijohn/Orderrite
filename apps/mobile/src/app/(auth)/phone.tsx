@@ -5,6 +5,7 @@ import { authErrorMessage, en, type RequestCodeResponse } from 'shared';
 import { Body, Button, DemoBanner, ErrorText, ErrorView, Input, LoadingView, Screen, Title } from '@/components/ui';
 import { usePublicConfig } from '@/config/usePublicConfig';
 import { apiRequest, errorBody } from '@/lib/api';
+import { useSlowHint } from '@/lib/useSlowHint';
 import { plain } from '@/theme/plain';
 
 export default function PhoneScreen() {
@@ -12,6 +13,7 @@ export default function PhoneScreen() {
   const [phone, setPhone] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const slow = useSlowHint(sending);
 
   if (state.status === 'loading') return <LoadingView />;
   if (state.status === 'error') return <ErrorView message={en.common.cantReachServer} onRetry={reload} />;
@@ -54,6 +56,7 @@ export default function PhoneScreen() {
       </View>
 
       {error && <ErrorText>{error}</ErrorText>}
+      {slow && <Body muted>{en.common.firstLoadSlow}</Body>}
       <Button label={sending ? en.auth.sending : en.auth.sendCode} onPress={() => void sendCode(phone)} disabled={sending || phone.trim().length < 6} />
       {__DEV__ && !demo && <Body muted>{en.auth.devCodeHint}</Body>}
 
