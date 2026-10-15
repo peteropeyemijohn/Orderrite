@@ -1,0 +1,60 @@
+# --- Secrets: never commit real environment files ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.jks
+*.keystore
+google-services.json
+GoogleService-Info.plist
+
+# --- Dependencies ---
+node_modules/
+.pnpm-store/
+
+# --- Build output ---
+dist/
+build/
+out/
+.next/
+.turbo/
+*.tsbuildinfo
+coverage/
+
+# --- Expo / React Native ---
+.expo/
+.expo-shared/
+web-build/
+expo-env.d.ts
+apps/mobile/android/
+apps/mobile/ios/
+*.apk
+*.aab
+*.ipa
+
+# --- Vercel ---
+.vercel
+
+# --- Logs ---
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# --- Generated code (rebuilt by "prisma generate") ---
+apps/api/src/generated/
+.kotlin/
+.metro-health-check*
+*.p8
+*.mobileprovision
+apps/web/next-env.d.ts

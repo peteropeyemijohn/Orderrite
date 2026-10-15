@@ -1,0 +1,363 @@
+// Orderrite database schema.
+//
+// Rules this schema follows (see CLAUDE.md):
+// - Money is a whole number in the currency's minor unit (kobo for NGN),
+//   always stored next to a currency code. Fields ending in "Minor" are money.
+// - Percentages are basis points: 1500 = 15.00%. No floating-point money maths.
+// - Vendors, riders, addresses and orders all belong to a City, and every
+//   City belongs to a Country. Nothing assumes Akure or Nigeria.
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+// The connection URL lives in prisma.config.ts (read from environment variables).
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------- Enums (keep in sync with packages/shared/src/constants.ts) ----------
+
+enum Category {
+  FOOD
+  SHOPS
+  PHARMACY
+  BEAUTY
+  PACKAGE
+}
+
+enum Role {
+  CUSTOMER
+  RIDER
+  VENDOR
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  PLACED
+  ACCEPTED
+  PREPARING
+  READY
+  PICKED_UP
+  DELIVERED
+  CANCELLED
+  REJECTED
+}
+
+enum VehicleType {
+  BICYCLE
+  MOTORCYCLE
+  CAR
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  SUSPENDED
+}
+
+enum VendorStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum PackageSize {
+  SMALL
+  MEDIUM
+  LARGE
+}
+
+enum PaymentProviderName {
+  PAYSTACK
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+// ---------- Places ----------
+
+model Country {
+  id              String   @id @default(cuid())
+  /// ISO 3166-1 alpha-2 code, e.g. "NG"
+  code            String   @unique
+  name            String
+  /// ISO 4217 currency code, e.g. "NGN"
+  currencyCode    String
+  /// International dialling code with "+", e.g. "+234"
+  dialCode        String
+  /// IANA timezone, e.g. "Africa/Lagos"
+  timezone        String
+  /// Default language code, e.g. "en"
+  defaultLanguage String   @default("en")
+  isActive        Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  cities City[]
+}
+
+model City {
+  id                String     @id @default(cuid())
+  countryId         String
+  name              String
+  /// URL-friendly name, unique within a country, e.g. "akure"
+  slug              String
+  isActive          Boolean    @default(false)
+  /// Which categories are switched on in this city
+  enabledCategories Category[] @default([])
+  centerLat         Float
+  centerLng         Float
+  /// Service area boundary as a GeoJSON Polygon (null = not drawn yet)
+  serviceArea       Json?
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  country     Country          @relation(fields: [countryId], references: [id])
+  feeSettings CityFeeSettings?
+  vendors     Vendor[]
+  riders      Rider[]
+  addresses   Address[]
+  orders      Order[]
+
+  @@unique([countryId, slug])
+}
+
+/// Fees for one city. Edited by the admin; never hard-coded.
+model CityFeeSettings {
+  id                   String   @id @default(cuid())
+  cityId               String   @unique
+  currencyCode         String
+  baseDeliveryFeeMinor Int
+  perKmFeeMinor        Int
+  serviceFeeMinor      Int
+  /// Platform commission on the order subtotal, in basis points (1500 = 15%)
+  commissionBps        Int
+  /// Rider's share of the delivery fee, in basis points (8000 = 80%)
+  riderShareBps        Int
+  updatedAt            DateTime @updatedAt
+
+  city City @relation(fields: [cityId], references: [id], onDelete: Cascade)
+}
+
+// ---------- People ----------
+
+model User {
+  id        String   @id @default(cuid())
+  /// Phone number in international E.164 format, e.g. "+2348012345678"
+  phone     String   @unique
+  name      String?
+  /// CUSTOMER by default. ADMIN and VENDOR are never self-selected.
+  role      Role     @default(CUSTOMER)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  rider     Rider?
+  vendors   Vendor[]
+  addresses Address[]
+  orders    Order[]   @relation("CustomerOrders")
+}
+
+model Rider {
+  id             String         @id @default(cuid())
+  userId         String         @unique
+  cityId         String
+  vehicleType    VehicleType
+  idPhotoUrl     String?
+  status         ApprovalStatus @default(PENDING)
+  isOnline       Boolean        @default(false)
+  lastLat        Float?
+  lastLng        Float?
+  lastLocationAt DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  user   User    @relation(fields: [userId], references: [id])
+  city   City    @relation(fields: [cityId], references: [id])
+  orders Order[]
+
+  @@index([cityId, status, isOnline])
+}
+
+// ---------- Vendors and menus ----------
+
+model Vendor {
+  id           String       @id @default(cuid())
+  /// The user who manages this vendor in the dashboard (set by the admin)
+  ownerId      String?
+  cityId       String
+  category     Category
+  name         String
+  description  String?
+  phone        String?
+  addressText  String
+  lat          Float
+  lng          Float
+  logoUrl      String?
+  coverUrl     String?
+  /// Weekly opening hours, e.g. { "mon": [["08:00","21:00"]], ... }
+  openingHours Json?
+  /// The vendor's own open/closed switch
+  isOpen       Boolean      @default(false)
+  status       VendorStatus @default(ACTIVE)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  owner     User?      @relation(fields: [ownerId], references: [id])
+  city      City       @relation(fields: [cityId], references: [id])
+  menuItems MenuItem[]
+  orders    Order[]
+
+  @@index([cityId, category, status])
+}
+
+model MenuItem {
+  id           String   @id @default(cuid())
+  vendorId     String
+  name         String
+  description  String?
+  priceMinor   Int
+  currencyCode String
+  photoUrl     String?
+  isAvailable  Boolean  @default(true)
+  /// Menu section heading, e.g. "Rice dishes"
+  section      String?
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  vendor     Vendor      @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  orderItems OrderItem[]
+
+  @@index([vendorId])
+}
+
+// ---------- Addresses ----------
+
+model Address {
+  id        String   @id @default(cuid())
+  userId    String
+  cityId    String
+  /// e.g. "Home", "Work"
+  label     String?
+  text      String
+  /// Landmarks help a lot where street addresses are inconsistent
+  landmark  String?
+  lat       Float
+  lng       Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  city City @relation(fields: [cityId], references: [id])
+
+  @@index([userId])
+}
+
+// ---------- Orders and payments ----------
+
+/// One order. vendorId is empty for PACKAGE orders (no vendor).
+/// Prices and addresses are copied in at order time, so later edits to a
+/// menu or an address never change an old order.
+model Order {
+  id         String      @id @default(cuid())
+  /// Short human-friendly code shown to people, e.g. "OR-7K3P9"
+  code       String      @unique
+  customerId String
+  vendorId   String?
+  riderId    String?
+  cityId     String
+  category   Category
+  status     OrderStatus @default(PENDING_PAYMENT)
+
+  // Money, all calculated on the server
+  currencyCode      String
+  subtotalMinor     Int
+  deliveryFeeMinor  Int
+  serviceFeeMinor   Int
+  totalMinor        Int
+  /// Platform commission taken from the vendor, worked out at order time
+  commissionMinor   Int    @default(0)
+  /// What the rider earns for this delivery, worked out at order time
+  riderEarningMinor Int    @default(0)
+  distanceMeters    Int?
+
+  // Pickup point (vendor location, or the sender's address for packages)
+  pickupAddressText String
+  pickupLat         Float
+  pickupLng         Float
+
+  // Drop-off point
+  dropoffAddressText String
+  dropoffLandmark    String?
+  dropoffLat         Float
+  dropoffLng         Float
+
+  // Package delivery only
+  packageSize        PackageSize?
+  packageDescription String?
+  receiverName       String?
+  receiverPhone      String?
+
+  customerNote String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  customer User        @relation("CustomerOrders", fields: [customerId], references: [id])
+  vendor   Vendor?     @relation(fields: [vendorId], references: [id])
+  rider    Rider?      @relation(fields: [riderId], references: [id])
+  city     City        @relation(fields: [cityId], references: [id])
+  items    OrderItem[]
+  payments Payment[]
+
+  @@index([customerId, createdAt])
+  @@index([vendorId, status])
+  @@index([riderId, status])
+  @@index([cityId, status])
+}
+
+model OrderItem {
+  id             String  @id @default(cuid())
+  orderId        String
+  /// Link to the menu item (kept even if the item is later deleted)
+  menuItemId     String?
+  /// Copied at order time
+  name           String
+  unitPriceMinor Int
+  quantity       Int
+  lineTotalMinor Int
+
+  order    Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItem MenuItem? @relation(fields: [menuItemId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+}
+
+/// A payment attempt for an order. The unique provider reference is what
+/// makes webhook handling idempotent: the same payment can't be recorded twice.
+model Payment {
+  id           String              @id @default(cuid())
+  orderId      String
+  provider     PaymentProviderName
+  reference    String              @unique
+  amountMinor  Int
+  currencyCode String
+  status       PaymentStatus       @default(PENDING)
+  /// Raw details returned by the provider, for troubleshooting
+  providerData Json?
+  paidAt       DateTime?
+  refundedAt   DateTime?
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id])
+
+  @@index([orderId])
+}

@@ -1,0 +1,3 @@
+#!/bin/sh
+# Runs the secret scanner before every commit.
+node scripts/check-secrets.mjs
