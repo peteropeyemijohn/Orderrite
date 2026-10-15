@@ -9,16 +9,42 @@ const booleanFromString = z
   .default('false')
   .transform((value) => value === 'true');
 
-const envSchema = z.object({
-  NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-  PORT: z.coerce.number().int().positive().default(4000),
-  /** Pooled Neon connection, used by the running app */
-  DATABASE_URL: z.string().min(1, 'DATABASE_URL is missing. Copy it from Neon into apps/api/.env'),
-  /** Comma-separated list of web addresses allowed to call the API from a browser */
-  CORS_ORIGINS: z.string().default('http://localhost:3000'),
-  /** Demo deployment only. Never true in a real launch. */
-  DEMO_MODE: booleanFromString,
-});
+const secret = (name: string) =>
+  z
+    .string({ error: `${name} is missing. See apps/api/.env.example` })
+    .min(32, `${name} must be at least 32 characters. Generate one with: openssl rand -base64 48`);
+
+const envSchema = z
+  .object({
+    // Safe default: anything that is not explicitly "development" is treated
+    // as production (no codes printed in logs). `pnpm dev` sets development.
+    NODE_ENV: z.enum(['development', 'test', 'production']).default('production'),
+    PORT: z.coerce.number().int().positive().default(4000),
+    /** Pooled Neon connection, used by the running app */
+    DATABASE_URL: z.string().min(1, 'DATABASE_URL is missing. Copy it from Neon into apps/api/.env'),
+    /** Comma-separated list of web addresses allowed to call the API from a browser */
+    CORS_ORIGINS: z.string().default('http://localhost:3000'),
+    /** How many proxies sit in front of the API (0 locally, 1 on Render) */
+    TRUST_PROXY_HOPS: z.coerce.number().int().min(0).default(0),
+    /** Demo deployment only. Never true in a real launch. */
+    DEMO_MODE: booleanFromString,
+
+    /** Signs access tokens */
+    JWT_ACCESS_SECRET: secret('JWT_ACCESS_SECRET'),
+    /** Used to hash sign-in codes before they are stored */
+    OTP_HASH_SECRET: secret('OTP_HASH_SECRET'),
+    ACCESS_TOKEN_TTL_MINUTES: z.coerce.number().int().positive().default(15),
+    REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().default(30),
+    /**
+     * Optional shared secret between the web server and the API. When the web
+     * server sends it, the API trusts the visitor IP it forwards (for rate limiting).
+     */
+    WEB_PROXY_SECRET: z.string().min(32).optional(),
+  })
+  .refine((env) => env.JWT_ACCESS_SECRET !== env.OTP_HASH_SECRET, {
+    message: 'JWT_ACCESS_SECRET and OTP_HASH_SECRET must be different',
+    path: ['OTP_HASH_SECRET'],
+  });
 
 export type Env = z.infer<typeof envSchema>;
 
@@ -32,3 +58,6 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
   }
   return result.data;
 }
+
+/** Injection token so services can receive the checked settings. */
+export const ENV = Symbol('ENV');

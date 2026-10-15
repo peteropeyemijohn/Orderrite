@@ -96,3 +96,10 @@ Launch city is Akure, Nigeria, but the product will expand to other Nigerian cit
 - Prisma reads `DIRECT_URL` (migrations, seed); the running API uses the pooled `DATABASE_URL`. Both use `sslmode=verify-full`.
 - `packages/shared` is compiled to `dist/` (CommonJS) and imported as `shared` by all apps.
 - Mobile on a real phone needs `EXPO_PUBLIC_API_URL` set to the Mac's Wi-Fi address, not localhost.
+- Prisma migrations get `connect_timeout=30` added in `prisma.config.ts` (the owner's connection to London can be slow).
+- Auth (Phase 2): every API endpoint requires sign-in unless marked `@Public()`. Restrict by role with `@Roles('ADMIN')`; read the user with `@CurrentUser()`. Errors use `ApiError` with a stable `code`; apps translate codes via `authErrorMessage` in `packages/shared`.
+- Sign-in codes are printed in logs ONLY in development or DEMO_MODE (`otp-provider.factory.ts`). NODE_ENV defaults to production; `pnpm --filter api dev` sets development.
+- The demo code (123456) never works for real (non-demo) ADMIN, VENDOR or RIDER accounts.
+- Web session: httpOnly cookies set by the Next.js server (server actions); `src/proxy.ts` refreshes tokens before dashboard pages. The browser never sees tokens. Web needs `API_URL` (server-only).
+- Mobile session: refresh token in expo-secure-store, access token in memory (`src/auth/AuthProvider.tsx`). Screen groups are guarded by role with `Stack.Protected` in `src/app/_layout.tsx`. Rider code lives in `src/rider` and `src/app/(rider)`.
+- Tests use in-memory fakes (`apps/api/src/test-utils/fakes.ts`), not the real database.

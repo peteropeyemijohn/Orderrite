@@ -7,6 +7,11 @@ Ideas and features that are **not** in Plan A. When something new comes up durin
 - Rating of the rider and vendor after delivery
 - Reorder from order history
 
+## Technical improvements for later
+- Shared rate-limit storage (e.g. Redis) when the API runs on more than one server. Per-IP limits are kept in memory today; per-phone limits are already in the database.
+- "Log out of all devices" and a list of signed-in devices
+- Clean up old sign-in codes and expired refresh tokens on a schedule
+
 ## Plan B (public launch in Akure)
 - Shops, beauty and package delivery categories (switch on)
 - Pharmacy (after the PCN and NAFDAC licensing checks)

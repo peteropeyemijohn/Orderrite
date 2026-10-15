@@ -97,6 +97,9 @@ model Country {
   /// Default language code, e.g. "en"
   defaultLanguage String   @default("en")
   isActive        Boolean  @default(false)
+  /// The country used when a phone number has no "+" dialling code.
+  /// Exactly one country should have this set.
+  isDefault       Boolean  @default(false)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -156,13 +159,16 @@ model User {
   /// CUSTOMER by default. ADMIN and VENDOR are never self-selected.
   role      Role     @default(CUSTOMER)
   isActive  Boolean  @default(true)
+  /// Demo account (only created when DEMO_MODE=true)
+  isDemo    Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  rider     Rider?
-  vendors   Vendor[]
-  addresses Address[]
-  orders    Order[]   @relation("CustomerOrders")
+  rider         Rider?
+  vendors       Vendor[]
+  addresses     Address[]
+  orders        Order[]        @relation("CustomerOrders")
+  refreshTokens RefreshToken[]
 }
 
 model Rider {
@@ -360,4 +366,47 @@ model Payment {
   order Order @relation(fields: [orderId], references: [id])
 
   @@index([orderId])
+}
+
+// ---------- Login ----------
+
+/// A one-time sign-in code sent to a phone. Only an HMAC hash of the code is
+/// stored, never the code itself.
+model OtpCode {
+  id         String    @id @default(cuid())
+  /// E.164 phone number the code was sent to
+  phone      String
+  codeHash   String
+  expiresAt  DateTime
+  /// Wrong guesses so far. The code stops working after the limit.
+  attempts   Int       @default(0)
+  /// Set when the code is used successfully or replaced by a newer code
+  consumedAt DateTime?
+  ipAddress  String?
+  createdAt  DateTime  @default(now())
+
+  @@index([phone, createdAt])
+}
+
+/// A refresh token for one signed-in device. Only a SHA-256 hash is stored.
+/// Each token works once: using it returns a new token in the same family.
+/// If a used token is presented again, the whole family is revoked.
+model RefreshToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  /// All tokens from one sign-in share a family id
+  familyId  String
+  expiresAt DateTime
+  /// Set when the token has been exchanged for a new one
+  usedAt    DateTime?
+  /// Set on logout or when theft is suspected
+  revokedAt DateTime?
+  userAgent String?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([familyId])
+  @@index([userId])
 }

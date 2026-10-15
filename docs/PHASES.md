@@ -7,7 +7,7 @@ Status key: ⬜ not started · 🟨 in progress · ✅ done
 | # | Phase | Status |
 |---|---|---|
 | 1 | Project setup and database (local only) | ✅ |
-| 2 | Phone login | ⬜ |
+| 2 | Phone login | ✅ |
 | 2b | Deploy a test environment | ⬜ |
 | 3 | Design system | ⬜ |
 | 4 | Admin panel, vendor dashboard and seed data | ⬜ |
@@ -43,9 +43,16 @@ Goal: the app works without the owner's laptop, for a remote testing partner and
 - **API on Render (free web service).** Render builds from GitHub on every push to `main`. Region: Frankfurt (the closest Render region to the London database). It sleeps after about 15 minutes idle, so the first request can take about a minute. Database migrations run during each deploy.
 - **Web on Vercel (free Hobby plan).** It also builds from GitHub. The vendor dashboard and admin panel get a public `*.vercel.app` address.
 - **Database: Neon.** One separate Neon branch (a copy of the database) for the demo, so local experiments never break the live demo.
+- ⚠️ **The public demo must use its own separate database** (for example a separate Neon branch with its own connection strings). Demo visitors must never touch the owner's private test data, and the private database must never have `DEMO_MODE` data seeded into it. Render's `DATABASE_URL` / `DIRECT_URL` must point at the demo branch only.
 - **Mobile: Android APK via EAS Build** (Expo's cloud build service, free plan). We make a "preview" build that points at the Render API. EAS gives a download link and QR code, and testers install the APK directly (they allow "install unknown apps" once). There is no Play Store account and no laptop involved. iOS testers are not possible without a paid Apple account, so iOS is out of scope for Plan A.
 - Small changes to screens can later be pushed to installed apps with EAS Update, without a new APK.
 - The public Render address is used as the Paystack webhook URL, so no ngrok is needed.
+
+**Settings to set during deploy (from Phase 2)**
+- Render (API): `NODE_ENV=production`, `TRUST_PROXY_HOPS=1`, `DEMO_MODE=true`, new `JWT_ACCESS_SECRET` and `OTP_HASH_SECRET` (different from the laptop ones), `CORS_ORIGINS` = the Vercel address, `WEB_PROXY_SECRET`, and the demo-branch database URLs.
+- Vercel (web): `API_URL` = the Render address, and the same `WEB_PROXY_SECRET` as Render. Without it, every web visitor shares the Vercel server's IP for rate limiting.
+- EAS build profile (mobile): `EXPO_PUBLIC_API_URL` = the Render address.
+- Run the seed on the demo branch with `DEMO_MODE=true` to create the demo accounts. Real admin/vendor/rider accounts on the demo still need a real code, read from Render's logs.
 
 **DEMO_MODE (demo deployment only)**
 - `DEMO_MODE=true` only in the Render demo service. It defaults to false.

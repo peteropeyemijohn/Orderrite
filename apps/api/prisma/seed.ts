@@ -1,11 +1,14 @@
 // Seed script: adds the starting data. Safe to run many times (uses upsert,
 // so it updates existing rows instead of creating duplicates).
 //
-// Adds: Nigeria, Akure (active, Food only) with its fee settings, and the
-// first admin user from ADMIN_PHONE. Test vendors come in Phase 4.
+// Adds: Nigeria (the default country), Akure (active, Food only) with its fee
+// settings, and the first admin user from ADMIN_PHONE.
+// Only when DEMO_MODE=true: the demo accounts (never in a private database).
+// Test vendors come in Phase 4.
 import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../src/generated/prisma/client.js';
+import { DEMO_ACCOUNTS } from '../src/auth/demo-accounts.js';
 
 // International phone format: "+", country code, then the number (8 to 15 digits).
 const E164 = /^\+[1-9]\d{7,14}$/;
@@ -26,7 +29,7 @@ async function main() {
   try {
     const nigeria = await prisma.country.upsert({
       where: { code: 'NG' },
-      update: {},
+      update: { isDefault: true },
       create: {
         code: 'NG',
         name: 'Nigeria',
@@ -35,6 +38,7 @@ async function main() {
         timezone: 'Africa/Lagos',
         defaultLanguage: 'en',
         isActive: true,
+        isDefault: true,
       },
     });
 
@@ -75,9 +79,30 @@ async function main() {
       create: { phone: adminPhone, name: 'Admin', role: 'ADMIN' },
     });
 
+    // Demo accounts: ONLY when DEMO_MODE is exactly "true".
+    let demoSummary = '';
+    if (process.env.DEMO_MODE === 'true') {
+      console.warn('DEMO_MODE=true: creating demo accounts. Never do this in a private or real database.');
+      for (const account of DEMO_ACCOUNTS) {
+        const demoUser = await prisma.user.upsert({
+          where: { phone: account.phone },
+          update: { role: account.role, name: account.name, isDemo: true, isActive: true },
+          create: { phone: account.phone, role: account.role, name: account.name, isDemo: true },
+        });
+        if (account.role === 'RIDER') {
+          await prisma.rider.upsert({
+            where: { userId: demoUser.id },
+            update: { status: 'APPROVED' },
+            create: { userId: demoUser.id, cityId: akure.id, vehicleType: 'MOTORCYCLE', status: 'APPROVED' },
+          });
+        }
+      }
+      demoSummary = `, ${DEMO_ACCOUNTS.length} demo accounts`;
+    }
+
     // Only show the last 4 digits of the phone number in logs.
     const maskedPhone = `${admin.phone.slice(0, 4)}…${admin.phone.slice(-4)}`;
-    console.log(`Seeded ${nigeria.name}, ${akure.name} (active), admin ${maskedPhone}`);
+    console.log(`Seeded ${nigeria.name}, ${akure.name} (active), admin ${maskedPhone}${demoSummary}`);
   } finally {
     await prisma.$disconnect();
   }

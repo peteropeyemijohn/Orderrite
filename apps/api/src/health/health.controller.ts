@@ -1,5 +1,6 @@
 import { Controller, Get, HttpStatus, Res } from '@nestjs/common';
 import type { Response } from 'express';
+import { Public } from '../common/decorators/public.decorator.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 
 export interface HealthReport {
@@ -16,6 +17,7 @@ export interface HealthReport {
 export class HealthController {
   constructor(private readonly prisma: PrismaService) {}
 
+  @Public()
   @Get()
   async check(@Res({ passthrough: true }) res: Response): Promise<HealthReport> {
     const time = new Date().toISOString();
