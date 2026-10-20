@@ -43,7 +43,7 @@ export class AuthController {
     const client = describeClientIp(req, this.env);
     if (this.env.IP_DEBUG) {
       // Temporary, only while checking rate limiting after a deploy.
-      this.logger.log(`Code request counted for ${maskIp(client.ip)} (source: ${client.source})`);
+      this.logger.log(`Code request counted for ${maskIp(client.ip)} (source: ${client.source}; web server forward: ${client.webForward})`);
     }
     return this.auth.requestCode(body.phone, client.ip);
   }

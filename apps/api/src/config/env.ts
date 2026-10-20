@@ -46,7 +46,8 @@ const envSchema = z
      * Optional shared secret between the web server and the API. When the web
      * server sends it, the API trusts the visitor IP it forwards (for rate limiting).
      */
-    WEB_PROXY_SECRET: z.string().min(32).optional(),
+    // Trimmed: copy-paste often adds an invisible space or line break.
+    WEB_PROXY_SECRET: z.string().trim().min(32).optional(),
   })
   .refine((env) => env.JWT_ACCESS_SECRET !== env.OTP_HASH_SECRET, {
     message: 'JWT_ACCESS_SECRET and OTP_HASH_SECRET must be different',

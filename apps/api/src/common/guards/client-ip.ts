@@ -19,27 +19,41 @@ export function getClientIp(req: Request, settings: ClientIpSettings): string {
 
 export type ClientIpSource = 'web server' | 'edge header' | 'proxy chain';
 
+/** Why a request from our web server was or wasn't trusted (for IP_DEBUG logs). */
+export type WebForwardStatus =
+  | 'accepted'
+  | 'not sent (no forwarded IP header)'
+  | 'no secret header sent'
+  | 'secret does not match'
+  | 'API has no WEB_PROXY_SECRET';
+
 /** Like getClientIp, but also says where the IP came from (for IP_DEBUG logs). */
-export function describeClientIp(req: Request, settings: ClientIpSettings): { ip: string; source: ClientIpSource } {
+export function describeClientIp(
+  req: Request,
+  settings: ClientIpSettings,
+): { ip: string; source: ClientIpSource; webForward: WebForwardStatus } {
   const forwarded = req.headers['x-orderrite-client-ip'];
   const secretHeader = req.headers['x-orderrite-proxy-secret'];
-  if (
-    settings.WEB_PROXY_SECRET &&
-    typeof forwarded === 'string' &&
-    typeof secretHeader === 'string' &&
-    safeEqual(secretHeader, settings.WEB_PROXY_SECRET)
-  ) {
-    return { ip: forwarded.slice(0, 64), source: 'web server' };
+  const webForward = webForwardStatus(forwarded, secretHeader, settings.WEB_PROXY_SECRET);
+  if (webForward === 'accepted' && typeof forwarded === 'string') {
+    return { ip: forwarded.trim().slice(0, 64), source: 'web server', webForward };
   }
 
   if (settings.CLIENT_IP_HEADER) {
     const value = req.headers[settings.CLIENT_IP_HEADER];
     if (typeof value === 'string' && value.length > 0) {
-      return { ip: value.split(',')[0]!.trim().slice(0, 64), source: 'edge header' };
+      return { ip: value.split(',')[0]!.trim().slice(0, 64), source: 'edge header', webForward };
     }
   }
 
-  return { ip: req.ip ?? 'unknown', source: 'proxy chain' };
+  return { ip: req.ip ?? 'unknown', source: 'proxy chain', webForward };
+}
+
+function webForwardStatus(forwarded: unknown, secretHeader: unknown, secret: string | undefined): WebForwardStatus {
+  if (typeof forwarded !== 'string' || forwarded.trim() === '') return 'not sent (no forwarded IP header)';
+  if (typeof secretHeader !== 'string' || secretHeader.trim() === '') return 'no secret header sent';
+  if (!secret) return 'API has no WEB_PROXY_SECRET';
+  return safeEqual(secretHeader.trim(), secret.trim()) ? 'accepted' : 'secret does not match';
 }
 
 /** Shortens an IP for logs: 154.x.x.69 or 2c0f:6dc0:… */

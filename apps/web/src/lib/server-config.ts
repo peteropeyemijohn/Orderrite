@@ -7,5 +7,6 @@ export const API_URL = process.env.API_URL ?? 'http://localhost:4000';
  * Optional shared secret with the API. When set, the API trusts the visitor IP
  * we forward, so each web visitor gets their own rate limit.
  */
-export const WEB_PROXY_SECRET = process.env.WEB_PROXY_SECRET;
+// Trimmed: copy-paste often adds an invisible space or line break.
+export const WEB_PROXY_SECRET = process.env.WEB_PROXY_SECRET?.trim() || undefined;
 export const IS_PRODUCTION = process.env.NODE_ENV === 'production';
