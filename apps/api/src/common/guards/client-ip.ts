@@ -14,6 +14,13 @@ export type ClientIpSettings = Pick<Env, 'WEB_PROXY_SECRET' | 'CLIENT_IP_HEADER'
  *    (the number of proxies in front of us), ignoring entries a visitor added.
  */
 export function getClientIp(req: Request, settings: ClientIpSettings): string {
+  return describeClientIp(req, settings).ip;
+}
+
+export type ClientIpSource = 'web server' | 'edge header' | 'proxy chain';
+
+/** Like getClientIp, but also says where the IP came from (for IP_DEBUG logs). */
+export function describeClientIp(req: Request, settings: ClientIpSettings): { ip: string; source: ClientIpSource } {
   const forwarded = req.headers['x-orderrite-client-ip'];
   const secretHeader = req.headers['x-orderrite-proxy-secret'];
   if (
@@ -22,15 +29,25 @@ export function getClientIp(req: Request, settings: ClientIpSettings): string {
     typeof secretHeader === 'string' &&
     safeEqual(secretHeader, settings.WEB_PROXY_SECRET)
   ) {
-    return forwarded.slice(0, 64);
+    return { ip: forwarded.slice(0, 64), source: 'web server' };
   }
 
   if (settings.CLIENT_IP_HEADER) {
     const value = req.headers[settings.CLIENT_IP_HEADER];
-    if (typeof value === 'string' && value.length > 0) return value.split(',')[0]!.trim().slice(0, 64);
+    if (typeof value === 'string' && value.length > 0) {
+      return { ip: value.split(',')[0]!.trim().slice(0, 64), source: 'edge header' };
+    }
   }
 
-  return req.ip ?? 'unknown';
+  return { ip: req.ip ?? 'unknown', source: 'proxy chain' };
+}
+
+/** Shortens an IP for logs: 154.x.x.69 or 2c0f:6dc0:… */
+export function maskIp(ip: string): string {
+  const v4 = ip.replace(/^::ffff:/, '').match(/^(\d+)\.\d+\.\d+\.(\d+)$/);
+  if (v4) return `${v4[1]}.x.x.${v4[2]}`;
+  const parts = ip.split(':');
+  return parts.length > 2 ? `${parts.slice(0, 2).join(':')}:… (IPv6)` : 'unknown';
 }
 
 function safeEqual(a: string, b: string): boolean {
