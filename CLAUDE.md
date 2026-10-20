@@ -111,5 +111,6 @@ Launch city is Akure, Nigeria, but the product will expand to other Nigerian cit
 - Render: health check `/health/live` (no database), builds with `scripts/render-build.sh`, runs migrations + seed on every deploy. No `ADMIN_PHONE` on Render (no real phone numbers on the demo).
 - Render fetches pnpm with `npx --yes pnpm@12.11.2` (it has no pnpm). Vercel provides pnpm itself from `packageManager` in the root package.json, so `vercel.json` calls `pnpm` directly (npx there causes `Unknown env config "cache-dir"` warnings).
 - Vercel project: `orderrite-apps` (https://orderrite-apps.vercel.app), Root Directory `apps/web`.
-- Visitor IP for rate limiting: `TRUST_PROXY_HOPS` / `CLIENT_IP_HEADER`, verified live with `/health/ip` while `IP_DEBUG=true`. Keep `IP_DEBUG=false` otherwise.
+- Visitor IP for rate limiting: `TRUST_PROXY_HOPS=3` on Render (measured: visitor, Cloudflare, Render balancer). Web logins are forwarded by Vercel with `WEB_PROXY_SECRET` (same value on both; Vercel hides saved values). Verify with `pnpm check-ip` and the `IP check` log line while `IP_DEBUG=true`; keep `IP_DEBUG=false` otherwise.
+- Live: API https://orderrite-api.onrender.com, web https://orderrite-apps.vercel.app. Change Render settings in `render.yaml` (Blueprint sync overwrites dashboard edits for non-secret values).
 - Free tier sleeps: apps show a "waking up" hint after 5 s and wait up to 70 s.

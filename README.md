@@ -10,9 +10,9 @@ It is built to grow: countries, cities, currencies and fees are data, not code.
 
 | | Link |
 |---|---|
-| Web dashboard (admin / vendor) | _coming soon_ |
+| Web dashboard (admin / vendor) | https://orderrite-apps.vercel.app |
 | Android app (APK) | _coming soon_ |
-| API health check | _coming soon_ |
+| API health check | https://orderrite-api.onrender.com/health |
 
 ⏳ **The first load can take about a minute.** The demo runs on free hosting that sleeps when nobody is using it. After it wakes up, it is fast.
 

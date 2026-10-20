@@ -33,8 +33,9 @@ services:
       # from the end of X-Forwarded-For; fake entries a visitor adds stay at the start.
       - key: TRUST_PROXY_HOPS
         value: "3"
+      # Turn on only while re-checking visitor IP detection (pnpm check-ip).
       - key: IP_DEBUG
-        value: "true"
+        value: "false"
       - key: DATABASE_URL
         sync: false
       - key: DIRECT_URL
