@@ -131,3 +131,31 @@ describe('AuthController behind a hosting proxy', () => {
   });
 });
 
+// The exact layout measured on Render (Phase 2b): the app receives
+// X-Forwarded-For: "<visitor>, <Cloudflare 172.x>, <Render balancer 10.x>"
+// from a local proxy, so TRUST_PROXY_HOPS=3 finds the visitor.
+describe('AuthController with the header layout measured on Render', () => {
+  const limit = AUTH_IP_LIMITS.requestCode.limit;
+  let app: INestApplication;
+  afterEach(() => app.close());
+
+  const viaRender = (visitorIp: string, fakeEntry?: string) =>
+    request(app.getHttpServer())
+      .post('/auth/otp/request')
+      .set('X-Forwarded-For', [fakeEntry, visitorIp, '172.68.10.43', '10.27.90.130'].filter(Boolean).join(', '))
+      .send({ phone: '08031234567' });
+
+  it('gives two different visitors separate limits', async () => {
+    ({ app } = await makeApp({ trustProxyHops: 3 }));
+    for (let i = 0; i < limit; i++) await viaRender('154.72.1.1').expect(200);
+    await viaRender('154.72.1.1').expect(429);
+    await viaRender('41.58.2.2').expect(200);
+  });
+
+  it('ignores a fake X-Forwarded-For entry added by the visitor', async () => {
+    ({ app } = await makeApp({ trustProxyHops: 3 }));
+    for (let i = 0; i < limit; i++) await viaRender('154.72.1.1', `6.6.6.${i}`).expect(200);
+    await viaRender('154.72.1.1', '6.6.6.99').expect(429);
+  });
+});
+

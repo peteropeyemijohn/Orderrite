@@ -28,9 +28,11 @@ services:
         value: "24"
       - key: DEMO_MODE
         value: "true"
-      # Measured after the first deploy with IP_DEBUG (see docs/PHASES.md).
+      # Measured on the first deploy with IP_DEBUG: visitor -> Cloudflare (172.x)
+      # -> Render balancer (10.x) -> local proxy -> app. The visitor's IP is 3rd
+      # from the end of X-Forwarded-For; fake entries a visitor adds stay at the start.
       - key: TRUST_PROXY_HOPS
-        value: "1"
+        value: "3"
       - key: IP_DEBUG
         value: "true"
       - key: DATABASE_URL

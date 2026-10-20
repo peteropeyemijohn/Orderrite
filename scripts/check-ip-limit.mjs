@@ -13,16 +13,24 @@ if (!apiUrl?.startsWith('https://')) {
 }
 const base = apiUrl.replace(/\/$/, '');
 const ok = (pass, text) => console.log(`${pass ? '✓' : '✗'} ${text}`);
+// Show only the first and last part of an IPv4 address in the output.
+const mask = (ip) => (typeof ip === 'string' ? ip.replace(/^(\d+)\.\d+\.\d+\.(\d+)$/, '$1.x.x.$2') : ip);
 let failures = 0;
 const check = (pass, text) => {
   ok(pass, text);
   if (!pass) failures++;
 };
 
+/** What the API sees; null if the hosting edge blocked the request (e.g. a faked edge header). */
 async function seenIp(headers = {}) {
   const res = await fetch(`${base}/health/ip`, { headers, signal: AbortSignal.timeout(90_000) });
   if (res.status === 404) throw new Error('GET /health/ip is off. Set IP_DEBUG=true on Render while checking.');
-  return res.json();
+  const text = await res.text();
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
 }
 
 console.log('Waking the API (can take up to a minute)…');
@@ -31,13 +39,17 @@ await fetch(`${base}/health/live`, { signal: AbortSignal.timeout(90_000) });
 // 1. Does the API see the same IP as the rest of the internet?
 const myIp = (await (await fetch('https://api.ipify.org?format=json')).json()).ip;
 const seen = await seenIp();
-console.log(`\nYour public IP: ${myIp}`);
-console.log('What the API sees:', JSON.stringify(seen, null, 2));
-check(seen.detectedIp === myIp, `1. The API sees your real IP (${seen.detectedIp})`);
+console.log(`\nYour public IP: ${mask(myIp)} | the API sees: ${mask(seen.detectedIp)} (TRUST_PROXY_HOPS=${seen.trustProxyHops}, CLIENT_IP_HEADER=${seen.clientIpHeader ?? 'none'})`);
+console.log(`X-Forwarded-For has ${seen.xForwardedFor ? seen.xForwardedFor.split(',').length : 0} entries`);
+check(seen.detectedIp === myIp, '1. The API sees your real IP');
 
-// 2. Writing a fake IP into the headers must not change what the API sees.
-const spoofed = await seenIp({ 'X-Forwarded-For': '6.6.6.6', 'CF-Connecting-IP': '6.6.6.6', 'True-Client-IP': '6.6.6.6' });
-check(spoofed.detectedIp === seen.detectedIp, `2. A fake IP header is ignored (still ${spoofed.detectedIp})`);
+// 2. Writing a fake IP into a header must not change what the API sees.
+// Each header is tested on its own; a request the edge blocks also counts as safe.
+for (const header of ['X-Forwarded-For', 'True-Client-IP', 'CF-Connecting-IP', 'X-Real-IP']) {
+  const spoofed = await seenIp({ [header]: '6.6.6.6' });
+  if (spoofed === null) check(true, `2. Fake ${header}: blocked by the hosting edge`);
+  else check(spoofed.detectedIp === myIp, `2. Fake ${header}: ignored (API still sees ${mask(spoofed.detectedIp)})`);
+}
 
 // 3. Burst: the 11th code request from this IP within 15 minutes is refused.
 if (flag === '--burst') {
