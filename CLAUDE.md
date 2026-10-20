@@ -109,6 +109,7 @@ Launch city is Akure, Nigeria, but the product will expand to other Nigerian cit
 ## Deployment (Phase 2b)
 - Public demo only: API on Render (`render.yaml`, Frankfurt, free), web on Vercel (`apps/web/vercel.json`, root dir `apps/web`, region fra1), Android APK via EAS (`apps/mobile/eas.json`, profile `preview`). All use `DEMO_MODE=true` and the Neon **demo** branch, never the private branch.
 - Render: health check `/health/live` (no database), builds with `scripts/render-build.sh`, runs migrations + seed on every deploy. No `ADMIN_PHONE` on Render (no real phone numbers on the demo).
-- Build servers fetch pnpm with `npx --yes pnpm@12.11.2` (they don't have pnpm); everything else uses pnpm.
+- Render fetches pnpm with `npx --yes pnpm@12.11.2` (it has no pnpm). Vercel provides pnpm itself from `packageManager` in the root package.json, so `vercel.json` calls `pnpm` directly (npx there causes `Unknown env config "cache-dir"` warnings).
+- Vercel project: `orderrite-apps` (https://orderrite-apps.vercel.app), Root Directory `apps/web`.
 - Visitor IP for rate limiting: `TRUST_PROXY_HOPS` / `CLIENT_IP_HEADER`, verified live with `/health/ip` while `IP_DEBUG=true`. Keep `IP_DEBUG=false` otherwise.
 - Free tier sleeps: apps show a "waking up" hint after 5 s and wait up to 70 s.

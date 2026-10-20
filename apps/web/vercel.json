@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "installCommand": "cd ../.. && npx --yes pnpm@12.11.2 install --frozen-lockfile --filter \"web...\"",
-  "buildCommand": "cd ../.. && npx --yes pnpm@12.11.2 --filter shared build && npx --yes pnpm@12.11.2 --filter web build",
+  "installCommand": "cd ../.. && pnpm install --frozen-lockfile --filter \"web...\"",
+  "buildCommand": "cd ../.. && pnpm --filter shared build && pnpm --filter web build",
   "regions": ["fra1"]
 }
