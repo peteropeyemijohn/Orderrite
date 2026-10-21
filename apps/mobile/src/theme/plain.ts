@@ -13,7 +13,8 @@ export const plain = {
     demoBackground: '#fef3c7',
     demoText: '#78350f',
   },
-  space: { xs: 4, sm: 8, md: 16, lg: 24, xl: 32 },
+  // "bottom" is extra room below the last item, on top of the device's safe area.
+  space: { xs: 4, sm: 8, md: 16, lg: 24, xl: 32, bottom: 40 },
   radius: 16,
   font: { body: 16, small: 14, title: 26 },
 } as const;

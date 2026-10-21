@@ -13,6 +13,7 @@
     "expo-splash-screen": "~57.0.10",
     "expo-status-bar": "~57.0.1",
     "expo-system-ui": "~57.0.4",
+    "expo-updates": "~57.0.26",
     "expo-web-browser": "~57.0.3",
     "react": "19.2.3",
     "react-dom": "19.2.3",
@@ -36,7 +37,9 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "start:demo": "EXPO_PUBLIC_API_URL=https://orderrite-api.onrender.com expo start",
+    "update:demo": "EXPO_PUBLIC_API_URL=https://orderrite-api.onrender.com pnpm dlx eas-cli@24.14.0 update --channel preview --platform android"
   },
   "private": true
 }

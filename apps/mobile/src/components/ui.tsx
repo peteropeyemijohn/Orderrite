@@ -1,14 +1,50 @@
 // Plain building blocks for Phase 2 screens. Phase 3 restyles these.
 import { useEffect, useState, type ReactNode } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View, type TextInputProps } from 'react-native';
+import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+  type TextInputProps,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { en } from 'shared';
 import { plain } from '@/theme/plain';
 
-export function Screen({ children }: { children: ReactNode }) {
+/**
+ * How the screen makes room for the keyboard. "padding" adds space at the
+ * bottom equal to the keyboard's height. The app draws behind Android's
+ * system bars (edge-to-edge), so Android needs this too, not only iPhone.
+ */
+const KEYBOARD_BEHAVIOR = 'padding';
+
+/**
+ * The wrapper for every screen:
+ * - keeps content clear of the status bar, notch, home bar (iPhone) and
+ *   navigation bar (Android), using the device's safe area;
+ * - moves content up when the keyboard opens;
+ * - scrolls when the content is taller than the screen (small phones, large text).
+ * `centered` puts short content (loading, errors) in the middle of the screen.
+ */
+export function Screen({ children, centered }: { children: ReactNode; centered?: boolean }) {
   return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.screen}>{children}</View>
+    <SafeAreaView style={styles.safe} edges={['top', 'bottom', 'left', 'right']}>
+      <KeyboardAvoidingView style={styles.flex} behavior={KEYBOARD_BEHAVIOR}>
+        <ScrollView
+          style={styles.flex}
+          contentContainerStyle={[styles.screen, centered && styles.centered]}
+          // A tap on a button while the keyboard is open works on the first tap.
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
+        >
+          {children}
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -59,11 +95,9 @@ export function LoadingView() {
     return () => clearTimeout(timer);
   }, []);
   return (
-    <Screen>
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color={plain.color.primary} />
-        <Body muted>{slow ? en.common.firstLoadSlow : en.common.loading}</Body>
-      </View>
+    <Screen centered>
+      <ActivityIndicator size="large" color={plain.color.primary} />
+      <Body muted>{slow ? en.common.firstLoadSlow : en.common.loading}</Body>
     </Screen>
   );
 }
@@ -71,11 +105,9 @@ export function LoadingView() {
 /** Friendly error state with a retry button. */
 export function ErrorView({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
-    <Screen>
-      <View style={styles.center}>
-        <ErrorText>{message}</ErrorText>
-        <Button label={en.common.retry} onPress={onRetry} />
-      </View>
+    <Screen centered>
+      <ErrorText>{message}</ErrorText>
+      <Button label={en.common.retry} onPress={onRetry} />
     </Screen>
   );
 }
@@ -90,8 +122,16 @@ export function DemoBanner({ code }: { code: string }) {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: plain.color.background },
-  screen: { flex: 1, padding: plain.space.lg, gap: plain.space.md },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: plain.space.md },
+  flex: { flex: 1 },
+  // flexGrow (not flex) lets short screens fill the height and tall screens scroll.
+  screen: {
+    flexGrow: 1,
+    paddingHorizontal: plain.space.lg,
+    paddingTop: plain.space.lg,
+    paddingBottom: plain.space.bottom,
+    gap: plain.space.md,
+  },
+  centered: { alignItems: 'stretch', justifyContent: 'center' },
   title: { fontSize: plain.font.title, fontWeight: '700', color: plain.color.text },
   body: { fontSize: plain.font.body, color: plain.color.text, textAlign: 'left' },
   muted: { color: plain.color.muted, textAlign: 'center' },

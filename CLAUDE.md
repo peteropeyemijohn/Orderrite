@@ -83,7 +83,9 @@ Launch city is Akure, Nigeria, but the product will expand to other Nigerian cit
 - Install: `pnpm install` (also builds `packages/shared` and turns on the secret-scan git hook)
 - API dev: `pnpm --filter api dev` (http://localhost:4000, health check at `/health`)
 - Web dev: `pnpm --filter web dev` (http://localhost:3000)
-- Mobile dev: `pnpm --filter mobile start` (scan the QR code with Expo Go)
+- Mobile dev: `pnpm --filter mobile start` (scan the QR code with Expo Go; uses the laptop API)
+- Mobile against the live demo API: `pnpm --filter mobile start:demo`
+- Ship a JS-only mobile change to installed APKs: `pnpm --filter mobile update:demo` (EAS Update, channel `preview`; native changes need a new EAS build). Free EAS builds are limited: test in Expo Go first and ask before building.
 - Tests: `pnpm test`
 - Type check: `pnpm typecheck`
 - Lint: `pnpm lint`
@@ -114,3 +116,4 @@ Launch city is Akure, Nigeria, but the product will expand to other Nigerian cit
 - Visitor IP for rate limiting: `TRUST_PROXY_HOPS=3` on Render (measured: visitor, Cloudflare, Render balancer). Web logins are forwarded by Vercel with `WEB_PROXY_SECRET` (same value on both; Vercel hides saved values). Verify with `pnpm check-ip` and the `IP check` log line while `IP_DEBUG=true`; keep `IP_DEBUG=false` otherwise.
 - Live: API https://orderrite-api.onrender.com, web https://orderrite-apps.vercel.app. Change Render settings in `render.yaml` (Blueprint sync overwrites dashboard edits for non-secret values).
 - Free tier sleeps: apps show a "waking up" hint after 5 s and wait up to 70 s.
+- Mobile screens: always wrap in `Screen` from `apps/mobile/src/components/ui.tsx` (safe area, keyboard avoidance, scrolling). Never add per-screen SafeAreaView or fixed heights.

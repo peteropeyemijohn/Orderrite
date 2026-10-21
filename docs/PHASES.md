@@ -62,6 +62,13 @@ Goal: the app works without the owner's laptop, for a remote testing partner and
 6. **Android build:** put the Render address in `apps/mobile/eas.json` (`EXPO_PUBLIC_API_URL`, not a secret). In `apps/mobile`: `pnpm dlx eas-cli@24.14.0 login`, `pnpm dlx eas-cli@24.14.0 init`, then `pnpm dlx eas-cli@24.14.0 build -p android --profile preview` (let EAS create and keep the signing key). Share the link it prints.
 7. **README:** fill in the live links. Secret scan, commit, push.
 
+**Mobile updates without a new build (EAS Update, set up 2026-10-21)**
+- Test first in Expo Go against the live demo API: `pnpm --filter mobile start:demo` (iPhone and Android, same Wi-Fi as the Mac).
+- Ship a screen or text change to installed APKs: from the repo root, `pnpm --filter mobile update:demo` (channel `preview`). People get it the next time they fully close and reopen the app, sometimes on the second reopen.
+- Updates only reach builds with the same native "fingerprint" (`runtimeVersion.policy: fingerprint`). After adding or upgrading a native package (anything installed with `expo install` that has native code), a **new EAS build** is needed. If `update:demo` says no compatible build exists, that's the reason.
+- `update:demo` sets the live API address itself, so the laptop's `apps/mobile/.env` never leaks into an update.
+- Each preview build gets a higher version code automatically (`autoIncrement`).
+
 **Which Neon string goes where**
 
 | Neon string | Laptop `apps/api/.env` | `apps/api/.env.demo` | Render |
