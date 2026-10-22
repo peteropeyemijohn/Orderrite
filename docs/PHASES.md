@@ -8,7 +8,7 @@ Status key: ⬜ not started · 🟨 in progress · ✅ done
 |---|---|---|
 | 1 | Project setup and database (local only) | ✅ |
 | 2 | Phone login | ✅ |
-| 2b | Deploy a test environment | 🟨 |
+| 2b | Deploy a test environment | ✅ |
 | 3 | Design system | ⬜ |
 | 4 | Admin panel, vendor dashboard and seed data | ⬜ |
 | 5 | Customer browsing and cart | ⬜ |
@@ -61,6 +61,13 @@ Goal: the app works without the owner's laptop, for a remote testing partner and
 5. **IP check** (Render has `IP_DEBUG=true` for now): run `pnpm check-ip https://<api>.onrender.com`. *Measured on the first deploy (2026-10-20): X-Forwarded-For arrives as `visitor, Cloudflare 172.x, Render 10.x`, so `TRUST_PROXY_HOPS=3`. A faked X-Forwarded-For entry stays at the start (ignored), a faked True-Client-IP is overwritten by the edge, and a faked CF-Connecting-IP is blocked. Re-run this check if Render's setup ever changes.* *Web logins: confirmed with the `IP check` log line (`source: web server; web server forward: accepted`). That needs the same `WEB_PROXY_SECRET` on Render and Vercel. Vercel hides saved "Sensitive" values (the edit box looks empty), so to change it, paste one fresh value into both places, then redeploy both.* Steps 1–2 must pass. If step 1 shows a Render internal IP, raise `TRUST_PROXY_HOPS` by one and re-check (or use `CLIENT_IP_HEADER` if the output shows a header that the edge sets and that ignores the fake value). Then `pnpm check-ip … --burst` and confirm a phone on mobile data can still request a code. **Afterwards set `IP_DEBUG=false` in `render.yaml` (done 2026-10-20).**
 6. **Android build:** put the Render address in `apps/mobile/eas.json` (`EXPO_PUBLIC_API_URL`, not a secret). In `apps/mobile`: `pnpm dlx eas-cli@24.14.0 login`, `pnpm dlx eas-cli@24.14.0 init`, then `pnpm dlx eas-cli@24.14.0 build -p android --profile preview` (let EAS create and keep the signing key). Share the link it prints.
 7. **README:** fill in the live links. Secret scan, commit, push.
+
+**Result (completed 2026-10-22)**
+- API: https://orderrite-api.onrender.com/health (Render, Frankfurt, free)
+- Web: https://orderrite-apps.vercel.app (Vercel, fra1)
+- Android APK (versionCode 2, safe-area fix, EAS Update): https://expo.dev/accounts/kalprice5/projects/orderrite/builds/cd624097-c278-459c-ac96-6e825a4e1b43
+- Database: Neon `demo` branch (schema-only branch, reset and seeded with demo data only; no real phone numbers)
+- Verified: per-visitor rate limits (direct and via the web server), demo logins on web and Android, iPhone + Android layout in Expo Go, an install over the previous APK as an update, and a test EAS Update published to the `preview` channel.
 
 **Mobile updates without a new build (EAS Update, set up 2026-10-21)**
 - Test first in Expo Go against the live demo API: `pnpm --filter mobile start:demo` (iPhone and Android, same Wi-Fi as the Mac).

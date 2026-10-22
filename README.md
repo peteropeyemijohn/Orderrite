@@ -11,7 +11,7 @@ It is built to grow: countries, cities, currencies and fees are data, not code.
 | | Link |
 |---|---|
 | Web dashboard (admin / vendor) | https://orderrite-apps.vercel.app |
-| Android app (APK) | _coming soon_ |
+| Android app (APK) | https://expo.dev/accounts/kalprice5/projects/orderrite/builds/cd624097-c278-459c-ac96-6e825a4e1b43 |
 | API health check | https://orderrite-api.onrender.com/health |
 
 ⏳ **The first load can take about a minute.** The demo runs on free hosting that sleeps when nobody is using it. After it wakes up, it is fast.
@@ -29,7 +29,7 @@ Everything on the demo uses the sign-in code **`123456`**.
 
 The app and the dashboard show one-tap buttons for these accounts. You can also sign in with any new phone number using `123456`. New numbers become customer accounts. The demo uses its own database and contains no real people's data.
 
-Installing the Android app: open the APK link on an Android phone, download it, and allow "install unknown apps" when asked.
+Installing the Android app: open the APK link on an Android phone, tap **Install**, and allow "install unknown apps" when asked. If Google Play Protect warns about an unknown app, choose **More details → Install anyway** (normal for test apps outside the Play Store). There is no iPhone build yet (that needs a paid Apple developer account).
 
 ## Tech stack
 
