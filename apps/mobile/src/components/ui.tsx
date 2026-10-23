@@ -1,25 +1,29 @@
-// Plain building blocks for Phase 2 screens. Phase 3 restyles these.
+// Screen-level building blocks: the shared Screen wrapper, inputs, banners,
+// and full-screen loading / error views. All values come from the theme.
 import { useEffect, useState, type ReactNode } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   ScrollView,
   StyleSheet,
-  Text,
   TextInput,
   View,
   type TextInputProps,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 import { en } from 'shared';
-import { plain } from '@/theme/plain';
+import { useStyles, useTheme } from '@/theme/ThemeProvider';
+import type { Theme } from '@/theme/theme';
+import { AppText } from './AppText';
+import { Icon } from './Icon';
+import { ErrorState } from './States';
 
 /**
  * How the screen makes room for the keyboard. "padding" adds space at the
  * bottom equal to the keyboard's height. The app draws behind Android's
  * system bars (edge-to-edge), so Android needs this too, not only iPhone.
+ * Tested on iPhone and Android (Phase 2b): no double gap.
  */
 const KEYBOARD_BEHAVIOR = 'padding';
 
@@ -30,14 +34,17 @@ const KEYBOARD_BEHAVIOR = 'padding';
  * - moves content up when the keyboard opens;
  * - scrolls when the content is taller than the screen (small phones, large text).
  * `centered` puts short content (loading, errors) in the middle of the screen.
+ * `withTabBar` leaves the bottom edge to the tab bar, which handles it itself.
  */
-export function Screen({ children, centered }: { children: ReactNode; centered?: boolean }) {
+export function Screen({ children, centered, withTabBar }: { children: ReactNode; centered?: boolean; withTabBar?: boolean }) {
+  const styles = useStyles(makeStyles);
+  const edges: Edge[] = withTabBar ? ['top', 'left', 'right'] : ['top', 'bottom', 'left', 'right'];
   return (
-    <SafeAreaView style={styles.safe} edges={['top', 'bottom', 'left', 'right']}>
+    <SafeAreaView style={styles.safe} edges={edges}>
       <KeyboardAvoidingView style={styles.flex} behavior={KEYBOARD_BEHAVIOR}>
         <ScrollView
           style={styles.flex}
-          contentContainerStyle={[styles.screen, centered && styles.centered]}
+          contentContainerStyle={[styles.screen, withTabBar && styles.withTabBar, centered && styles.centered]}
           // A tap on a button while the keyboard is open works on the first tap.
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
@@ -49,46 +56,57 @@ export function Screen({ children, centered }: { children: ReactNode; centered?:
   );
 }
 
+/** Large screen title. */
 export function Title({ children }: { children: ReactNode }) {
-  return <Text style={styles.title}>{children}</Text>;
+  return (
+    <AppText variant="title" accessibilityRole="header">
+      {children}
+    </AppText>
+  );
 }
 
+/** Body text. `muted` for secondary information. */
 export function Body({ children, muted }: { children: ReactNode; muted?: boolean }) {
-  return <Text style={[styles.body, muted && styles.muted]}>{children}</Text>;
+  return <AppText tone={muted ? 'muted' : 'default'}>{children}</AppText>;
 }
 
 export function ErrorText({ children }: { children: ReactNode }) {
   return (
-    <Text style={styles.error} accessibilityRole="alert">
+    <AppText tone="danger" variant="label" accessibilityRole="alert">
       {children}
-    </Text>
-  );
-}
-
-export function Button({ label, onPress, disabled, variant = 'primary' }: { label: string; onPress: () => void; disabled?: boolean; variant?: 'primary' | 'secondary' }) {
-  return (
-    <Pressable
-      accessibilityRole="button"
-      onPress={onPress}
-      disabled={disabled}
-      style={[styles.button, variant === 'secondary' && styles.buttonSecondary, disabled && styles.buttonDisabled]}
-    >
-      <Text style={[styles.buttonText, variant === 'secondary' && styles.buttonTextSecondary]}>{label}</Text>
-    </Pressable>
+    </AppText>
   );
 }
 
 export function Input(props: TextInputProps & { label: string }) {
+  const theme = useTheme();
+  const styles = useStyles(makeStyles);
+  const [focused, setFocused] = useState(false);
   return (
     <View style={styles.inputGroup}>
-      <Text style={styles.label}>{props.label}</Text>
-      <TextInput placeholderTextColor={plain.color.muted} {...props} style={[styles.input, props.style]} />
+      <AppText variant="label" tone="muted">
+        {props.label}
+      </AppText>
+      <TextInput
+        placeholderTextColor={theme.colors.textSubtle}
+        {...props}
+        onFocus={(e) => {
+          setFocused(true);
+          props.onFocus?.(e);
+        }}
+        onBlur={(e) => {
+          setFocused(false);
+          props.onBlur?.(e);
+        }}
+        style={[theme.text.body, styles.input, focused && { borderColor: theme.colors.primary }, props.style]}
+      />
     </View>
   );
 }
 
 /** Loading state. After a few seconds, explains that the server may be waking up. */
 export function LoadingView() {
+  const theme = useTheme();
   const [slow, setSlow] = useState(false);
   useEffect(() => {
     const timer = setTimeout(() => setSlow(true), 5000);
@@ -96,54 +114,68 @@ export function LoadingView() {
   }, []);
   return (
     <Screen centered>
-      <ActivityIndicator size="large" color={plain.color.primary} />
-      <Body muted>{slow ? en.common.firstLoadSlow : en.common.loading}</Body>
+      <ActivityIndicator size="large" color={theme.colors.primary} />
+      <AppText tone="muted" align="center">
+        {slow ? en.common.firstLoadSlow : en.common.loading}
+      </AppText>
     </Screen>
   );
 }
 
-/** Friendly error state with a retry button. */
+/** Full-screen friendly error state with a retry button. */
 export function ErrorView({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
     <Screen centered>
-      <ErrorText>{message}</ErrorText>
-      <Button label={en.common.retry} onPress={onRetry} />
+      <ErrorState body={message} onRetry={onRetry} />
     </Screen>
   );
 }
 
+/** Shown on the demo deployment, so visitors know it is a test version. */
 export function DemoBanner({ code }: { code: string }) {
+  const theme = useTheme();
+  const styles = useStyles(makeStyles);
   return (
-    <View style={styles.demo}>
-      <Text style={styles.demoText}>{en.auth.demoBanner(code)}</Text>
+    <View style={styles.demo} accessibilityRole="text">
+      <Icon name="flask-outline" size="md" color={theme.colors.primary} />
+      <AppText variant="label" tone="primary" style={styles.flexShrink}>
+        {en.auth.demoBanner(code)}
+      </AppText>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: plain.color.background },
-  flex: { flex: 1 },
-  // flexGrow (not flex) lets short screens fill the height and tall screens scroll.
-  screen: {
-    flexGrow: 1,
-    paddingHorizontal: plain.space.lg,
-    paddingTop: plain.space.lg,
-    paddingBottom: plain.space.bottom,
-    gap: plain.space.md,
-  },
-  centered: { alignItems: 'stretch', justifyContent: 'center' },
-  title: { fontSize: plain.font.title, fontWeight: '700', color: plain.color.text },
-  body: { fontSize: plain.font.body, color: plain.color.text, textAlign: 'left' },
-  muted: { color: plain.color.muted, textAlign: 'center' },
-  error: { fontSize: plain.font.body, color: plain.color.error },
-  button: { backgroundColor: plain.color.primary, borderRadius: plain.radius, paddingVertical: plain.space.md, alignItems: 'center' },
-  buttonSecondary: { backgroundColor: 'transparent', borderWidth: 1, borderColor: plain.color.border },
-  buttonDisabled: { opacity: 0.5 },
-  buttonText: { color: plain.color.primaryText, fontSize: plain.font.body, fontWeight: '600' },
-  buttonTextSecondary: { color: plain.color.text },
-  inputGroup: { gap: plain.space.xs },
-  label: { fontSize: plain.font.small, color: plain.color.muted },
-  input: { borderWidth: 1, borderColor: plain.color.border, borderRadius: plain.radius, padding: plain.space.md, fontSize: plain.font.body, color: plain.color.text },
-  demo: { backgroundColor: plain.color.demoBackground, borderRadius: plain.radius, padding: plain.space.md },
-  demoText: { color: plain.color.demoText, fontWeight: '600' },
-});
+const makeStyles = (theme: Theme) =>
+  StyleSheet.create({
+    safe: { flex: 1, backgroundColor: theme.colors.background },
+    flex: { flex: 1 },
+    flexShrink: { flexShrink: 1 },
+    // flexGrow (not flex) lets short screens fill the height and tall screens scroll.
+    screen: {
+      flexGrow: 1,
+      paddingHorizontal: theme.screenPadding,
+      paddingTop: theme.spacing.md,
+      paddingBottom: theme.screenBottom,
+      gap: theme.spacing.md,
+    },
+    withTabBar: { paddingBottom: theme.spacing.xl },
+    centered: { justifyContent: 'center' },
+    inputGroup: { gap: theme.spacing.xxs },
+    input: {
+      minHeight: Math.max(theme.minTap, theme.sizes.input),
+      borderWidth: 1.5,
+      borderColor: theme.colors.border,
+      borderRadius: theme.radius.md,
+      paddingHorizontal: theme.spacing.md,
+      backgroundColor: theme.colors.surface,
+      color: theme.colors.text,
+    },
+    demo: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.xs,
+      backgroundColor: theme.colors.primarySoft,
+      borderRadius: theme.radius.lg,
+      padding: theme.spacing.md,
+    },
+  });

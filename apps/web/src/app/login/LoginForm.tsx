@@ -7,9 +7,9 @@ import { loadPublicConfig, requestCode, verifyCode } from './actions';
 
 type Step = { name: 'phone' } | { name: 'code'; phone: string };
 
-const button = 'w-full rounded-2xl bg-neutral-900 py-3 font-semibold text-white disabled:opacity-50';
-const secondaryButton = 'w-full rounded-2xl border border-neutral-300 py-3 font-semibold disabled:opacity-50';
-const input = 'w-full rounded-2xl border border-neutral-300 p-3 text-base';
+const button = 'w-full rounded-full bg-primary py-3 font-semibold text-on-primary shadow-soft hover:bg-primary-pressed disabled:opacity-50';
+const secondaryButton = 'w-full rounded-full border border-border bg-surface py-3 font-semibold disabled:opacity-50';
+const input = 'w-full rounded-input border-[1.5px] border-border bg-surface p-3 text-base focus:border-primary focus:outline-none';
 
 export function LoginForm() {
   const [config, setConfig] = useState<PublicConfig | null>(null);
@@ -48,7 +48,7 @@ export function LoginForm() {
   if (configError) {
     return (
       <div className="flex flex-col gap-4">
-        <p className="text-red-700" role="alert">{configError}</p>
+        <p className="text-danger" role="alert">{configError}</p>
         <button
           className={button}
           onClick={() => {
@@ -63,7 +63,7 @@ export function LoginForm() {
     );
   }
   if (!config) {
-    return <p className="text-neutral-500">{slow ? en.common.firstLoadSlow : en.common.loading}</p>;
+    return <p className="text-muted">{slow ? en.common.firstLoadSlow : en.common.loading}</p>;
   }
 
   const sendCode = async (input: string) => {
@@ -96,9 +96,9 @@ export function LoginForm() {
   return (
     <div className="flex flex-col gap-4">
       {config.demo && (
-        <p className="rounded-2xl bg-amber-100 p-4 font-semibold text-amber-900">{en.auth.demoBanner(config.demo.code)}</p>
+        <p className="rounded-card bg-primary-soft p-4 font-semibold text-primary">{en.auth.demoBanner(config.demo.code)}</p>
       )}
-      {slowAction && <p className="text-neutral-500" role="status">{en.common.firstLoadSlow}</p>}
+      {slowAction && <p className="text-muted" role="status">{en.common.firstLoadSlow}</p>}
 
       {step.name === 'phone' ? (
         <form
@@ -109,9 +109,9 @@ export function LoginForm() {
           }}
         >
           <h1 className="text-2xl font-bold">{en.auth.phoneTitle}</h1>
-          <p className="text-neutral-600">{en.auth.phoneHint}</p>
+          <p className="text-muted">{en.auth.phoneHint}</p>
           <label className="flex flex-col gap-1">
-            <span className="text-sm text-neutral-600">{en.auth.phoneLabel}</span>
+            <span className="text-sm text-muted">{en.auth.phoneLabel}</span>
             <div className="flex items-center gap-2">
               <span className="font-semibold">{config.defaultCountry.dialCode}</span>
               <input
@@ -126,16 +126,16 @@ export function LoginForm() {
               />
             </div>
           </label>
-          {error && <p className="text-red-700" role="alert">{error}</p>}
+          {error && <p className="text-danger" role="alert">{error}</p>}
           <button className={button} type="submit" disabled={busy || phone.trim().length < 6}>
             {busy ? en.auth.sending : en.auth.sendCode}
           </button>
           {process.env.NODE_ENV === 'development' && !config.demo && (
-            <p className="text-sm text-neutral-500">{en.auth.devCodeHint}</p>
+            <p className="text-sm text-muted">{en.auth.devCodeHint}</p>
           )}
           {config.demo && (
             <div className="mt-2 flex flex-col gap-2">
-              <p className="text-sm text-neutral-600">{en.auth.demoAccounts}</p>
+              <p className="text-sm text-muted">{en.auth.demoAccounts}</p>
               {config.demo.accounts
                 .filter((account) => account.role === 'ADMIN' || account.role === 'VENDOR')
                 .map((account) => (
@@ -155,9 +155,9 @@ export function LoginForm() {
           }}
         >
           <h1 className="text-2xl font-bold">{en.auth.codeTitle}</h1>
-          <p className="text-neutral-600">{en.auth.codeSentTo(step.phone)}</p>
+          <p className="text-muted">{en.auth.codeSentTo(step.phone)}</p>
           <label className="flex flex-col gap-1">
-            <span className="text-sm text-neutral-600">{en.auth.codeLabel}</span>
+            <span className="text-sm text-muted">{en.auth.codeLabel}</span>
             <input
               className={`${input} tracking-widest`}
               inputMode="numeric"
@@ -168,7 +168,7 @@ export function LoginForm() {
               autoFocus
             />
           </label>
-          {error && <p className="text-red-700" role="alert">{error}</p>}
+          {error && <p className="text-danger" role="alert">{error}</p>}
           <button className={button} type="submit" disabled={busy || code.length !== 6}>
             {busy ? en.auth.verifying : en.auth.verify}
           </button>

@@ -9,7 +9,7 @@ Status key: ⬜ not started · 🟨 in progress · ✅ done
 | 1 | Project setup and database (local only) | ✅ |
 | 2 | Phone login | ✅ |
 | 2b | Deploy a test environment | ✅ |
-| 3 | Design system | ⬜ |
+| 3 | Design system | 🟨 |
 | 4 | Admin panel, vendor dashboard and seed data | ⬜ |
 | 5 | Customer browsing and cart | ⬜ |
 | 6 | Checkout, Paystack test payments and order statuses | ⬜ |
@@ -113,10 +113,25 @@ Goal: the app works without the owner's laptop, for a remote testing partner and
 - Shared money formatting helper and translations file in use
 - Loading, empty and error state components
 
+**Built (2026-10-23)**
+- Tokens: `packages/shared/src/design/tokens.ts` (3 brand options, neutrals, spacing, radius, type scale, min tap 44, image ratios). `ACTIVE_BRAND` there sets the brand for mobile AND web.
+- Contrast: `pnpm --filter shared contrast` prints the WCAG AA table; a test fails if any pair drops below AA.
+- Mobile theme: `apps/mobile/src/theme/theme.ts` (fonts, text styles, `boxShadow` shadows for iOS + Android, motion with Reduce Motion support, component sizes). Font: Plus Jakarta Sans (5 weights, loaded by `expo-font`, no native change).
+- Components: Button, Card, CategoryTile (icon / photo), CategoryGrid, VendorCard, PromoBadge, SearchBar, TabBar, Skeleton, EmptyState / ErrorState, AppImage, Notice.
+- Data-driven home: `GET /config/public` gained `city` (name, currency, every category with `enabled` from `City.enabledCategories`). Additive only; no database change. Off categories show a "Soon" label and a "coming soon to <city>" notice.
+- Dev-only design preview (`/dev-preview`, guarded by `__DEV__`): brand switcher, icon vs photo tiles, every component and state, sample home with made-up vendors (Unsplash photos).
+- Release order: API change must be live on Render before the app update (`update:demo`). The fingerprint is unchanged (`1b9df0e7…`), so Phase 3 ships as an EAS Update, no build.
+
 ## Phase 4: Admin panel, vendor dashboard and seed data
 - Admin: add, approve and suspend vendors and riders. See orders. Edit city fee settings. Basic totals.
 - Vendor dashboard (works on a phone browser): items (name, price, photo, sold out), open/closed toggle
 - Cloudinary image uploads
+- **Blurred photo placeholders with no work for vendors (planned in Phase 3):**
+  - Uploads go through the API (signed upload; the Cloudinary secret stays on Render). Store the Cloudinary `public_id` (and width/height) in the database, not full URLs.
+  - One shared helper builds display URLs, e.g. `…/image/upload/c_fill,g_auto,ar_16:9,w_800,q_auto,f_auto/<public_id>`.
+  - The same helper builds a tiny blurred version, e.g. `…/upload/c_fill,ar_16:9,w_32,q_auto:low,e_blur:1000,f_auto/<public_id>` (about 1 KB). The app's `AppImage` already accepts it: `placeholder={{ uri }}`. Cloudinary makes and caches it on first request; nothing extra is stored.
+  - The cloud name is public (fine in `EXPO_PUBLIC_` / `NEXT_PUBLIC_`); the API secret is never in the apps.
+  - Category photos (if the photo tile style is chosen) are stored the same way.
 - Seed data: 3 test vendors in Akure with realistic menus
 
 ## Phase 5: Customer browsing and cart

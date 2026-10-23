@@ -1,7 +1,9 @@
 import { en } from 'shared';
 import { useAuth } from '@/auth/AuthProvider';
 import { AccountCard } from '@/components/AccountCard';
-import { Body, Button, Screen, Title } from '@/components/ui';
+import { Button } from '@/components/Button';
+import { EmptyState } from '@/components/States';
+import { Screen, Title } from '@/components/ui';
 
 /**
  * Placeholder rider home. The rider flow comes in Phase 7.
@@ -13,9 +15,9 @@ export function RiderHomeScreen() {
   return (
     <Screen>
       <Title>{en.home.riderTitle}</Title>
-      <Body muted>{en.home.riderSubtitle}</Body>
+      <EmptyState icon="bicycle-outline" title={en.home.riderTitle} body={en.home.riderSubtitle} />
       <AccountCard user={user} />
-      <Button variant="secondary" label={en.common.logOut} onPress={() => void signOut()} />
+      <Button variant="danger" icon="log-out-outline" label={en.common.logOut} onPress={() => void signOut()} />
     </Screen>
   );
 }

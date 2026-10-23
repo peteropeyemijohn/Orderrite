@@ -11,7 +11,8 @@
     "build": "tsc -p tsconfig.build.json",
     "dev": "tsc -p tsconfig.build.json --watch",
     "typecheck": "tsc --noEmit",
-    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"src/**/*.test.ts\""
+    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"src/**/*.test.ts\"",
+    "contrast": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON src/design/contrast-report.ts"
   },
   "devDependencies": {
     "@types/node": "^24.19.2",

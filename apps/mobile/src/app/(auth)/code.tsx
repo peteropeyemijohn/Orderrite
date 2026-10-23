@@ -1,12 +1,17 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
+import { StyleSheet, View } from 'react-native';
 import { authErrorMessage, en, type RequestCodeResponse, type SessionResponse } from 'shared';
 import { useAuth } from '@/auth/AuthProvider';
-import { Body, Button, ErrorText, Input, Screen, Title } from '@/components/ui';
+import { Button } from '@/components/Button';
+import { Body, ErrorText, Input, Screen, Title } from '@/components/ui';
 import { apiRequest, errorBody } from '@/lib/api';
 import { useSlowHint } from '@/lib/useSlowHint';
+import { useStyles } from '@/theme/ThemeProvider';
+import type { Theme } from '@/theme/theme';
 
 export default function CodeScreen() {
+  const styles = useStyles(makeStyles);
   const params = useLocalSearchParams<{ phone: string; resendIn?: string }>();
   const phone = params.phone ?? '';
   const { signIn } = useAuth();
@@ -55,8 +60,10 @@ export default function CodeScreen() {
 
   return (
     <Screen>
-      <Title>{en.auth.codeTitle}</Title>
-      <Body muted>{en.auth.codeSentTo(phone)}</Body>
+      <View style={styles.header}>
+        <Title>{en.auth.codeTitle}</Title>
+        <Body muted>{en.auth.codeSentTo(phone)}</Body>
+      </View>
       <Input
         label={en.auth.codeLabel}
         value={code}
@@ -66,17 +73,24 @@ export default function CodeScreen() {
         textContentType="oneTimeCode"
         maxLength={6}
         autoFocus
+        style={styles.codeInput}
       />
       {error && <ErrorText>{error}</ErrorText>}
       {slow && <Body muted>{en.common.firstLoadSlow}</Body>}
-      <Button label={busy ? en.auth.verifying : en.auth.verify} onPress={() => void verify()} disabled={busy || code.length !== 6} />
+      <Button label={busy ? en.auth.verifying : en.auth.verify} onPress={() => void verify()} loading={busy} disabled={code.length !== 6} size="lg" />
       <Button
         variant="secondary"
         label={resendIn > 0 ? en.auth.resendIn(resendIn) : en.auth.resend}
         onPress={() => void resend()}
         disabled={busy || resendIn > 0}
       />
-      <Button variant="secondary" label={en.auth.changeNumber} onPress={() => router.back()} disabled={busy} />
+      <Button variant="ghost" label={en.auth.changeNumber} onPress={() => router.back()} disabled={busy} />
     </Screen>
   );
 }
+
+const makeStyles = (theme: Theme) =>
+  StyleSheet.create({
+    header: { gap: theme.spacing.xs, marginTop: theme.spacing.md },
+    codeInput: { letterSpacing: theme.sizes.codeLetterSpacing, fontFamily: theme.text.title.fontFamily, fontSize: theme.text.title.fontSize },
+  });

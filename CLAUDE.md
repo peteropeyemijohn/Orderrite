@@ -117,3 +117,10 @@ Launch city is Akure, Nigeria, but the product will expand to other Nigerian cit
 - Live: API https://orderrite-api.onrender.com, web https://orderrite-apps.vercel.app. Change Render settings in `render.yaml` (Blueprint sync overwrites dashboard edits for non-secret values).
 - Free tier sleeps: apps show a "waking up" hint after 5 s and wait up to 70 s.
 - Mobile screens: always wrap in `Screen` from `apps/mobile/src/components/ui.tsx` (safe area, keyboard avoidance, scrolling). Never add per-screen SafeAreaView or fixed heights.
+
+## Design system (Phase 3)
+- Tokens live in `packages/shared/src/design/tokens.ts`; `ACTIVE_BRAND` sets the brand for mobile and web. Contrast table: `pnpm --filter shared contrast` (a test enforces WCAG AA).
+- Mobile: use `useTheme()` / `useStyles(makeStyles)` from `src/theme/ThemeProvider.tsx`, `AppText` for all text, and the components in `src/components/`. No raw colours, sizes or strings in screens (sizes go in `theme.sizes`). Font: Plus Jakarta Sans, import single weights only.
+- Web: Tailwind classes map to the same tokens (`bg-primary`, `text-muted`, `rounded-card`, `shadow-soft`), set in `src/lib/design-tokens.ts` + `globals.css`.
+- Red is for promos and alerts only. No yellow or green brand colour.
+- Before shipping mobile changes as an EAS Update, check the fingerprint is unchanged: `pnpm exec expo-updates fingerprint:generate --platform android` in apps/mobile, compared with the installed build's runtime version. Don't add native packages without asking (new build).
