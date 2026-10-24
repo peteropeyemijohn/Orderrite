@@ -20,7 +20,7 @@ export function Skeleton({ width = '100%', height = 16, radius }: { width?: Dime
 
   useEffect(() => {
     if (reduceMotion) return;
-    opacity.set(withRepeat(withTiming(0.45, { duration: theme.motion.pulse, easing: Easing.inOut(Easing.ease) }), -1, true));
+    opacity.set(withRepeat(withTiming(0.5, { duration: theme.motion.pulse, easing: Easing.inOut(Easing.ease) }), -1, true));
     return () => cancelAnimation(opacity);
   }, [opacity, reduceMotion, theme.motion.pulse]);
 
@@ -29,7 +29,7 @@ export function Skeleton({ width = '100%', height = 16, radius }: { width?: Dime
     <Animated.View
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
-      style={[{ width, height, borderRadius: radius ?? theme.radius.sm, backgroundColor: theme.colors.surfaceMuted }, animatedStyle]}
+      style={[{ width, height, borderRadius: radius ?? theme.radius.sm, backgroundColor: theme.colors.skeleton }, animatedStyle]}
     />
   );
 }

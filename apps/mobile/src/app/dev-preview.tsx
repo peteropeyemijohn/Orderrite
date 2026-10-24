@@ -1,18 +1,20 @@
-// DEVELOPMENT ONLY: every component in every state, plus a sample home with
-// made-up vendors, and a switch to compare the three brand colours.
-// The route is guarded by __DEV__ in the root layout, so the installed app
-// can never open it.
+// DEVELOPMENT ONLY: every component in every state, the wordmark options, and
+// a sample home with made-up vendors. Guarded by __DEV__ in the root layout,
+// so the installed app can never open it.
 import { router } from 'expo-router';
-import { useState, type ReactNode } from 'react';
+import { StatusBar } from 'expo-status-bar';
+import { useCallback, useState, type ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { en, formatMoney } from 'shared';
+import { categoryColors, CATEGORIES, en, formatMoney } from 'shared';
+import { WORDMARK_OPTIONS, type WordmarkOption } from '@/brand/wordmarks';
 import { AppImage } from '@/components/AppImage';
 import { AppText, type TextVariant } from '@/components/AppText';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { CategoryGrid } from '@/components/CategoryGrid';
-import { CategoryTile } from '@/components/CategoryTile';
 import { Icon } from '@/components/Icon';
+import { LoginHero } from '@/components/LoginHero';
+import { Notice } from '@/components/Notice';
 import { PromoBadge } from '@/components/PromoBadge';
 import { SearchBar } from '@/components/SearchBar';
 import { CategoryGridSkeleton, Skeleton, VendorCardSkeleton } from '@/components/Skeleton';
@@ -20,34 +22,42 @@ import { EmptyState, ErrorState } from '@/components/States';
 import { TabBarView } from '@/components/TabBar';
 import { Screen } from '@/components/ui';
 import { VendorCard } from '@/components/VendorCard';
-import {
-  CATEGORY_PHOTOS,
-  SAMPLE_BLURHASH,
-  SAMPLE_CITY,
-  SAMPLE_VENDORS,
-  unsplash,
-  unsplashPlaceholder,
-} from '@/dev/sampleData';
-import { useSetBrand, useStyles, useTheme } from '@/theme/ThemeProvider';
-import { BRAND_OPTIONS, type Theme } from '@/theme/theme';
+import { Wordmark } from '@/components/Wordmark';
+import { SAMPLE_BLURHASH, SAMPLE_CITY, SAMPLE_CUSTOMER_NAME, SAMPLE_OPENS_AT, SAMPLE_VENDORS, unsplash, unsplashPlaceholder, type SampleVendor } from '@/dev/sampleData';
+import { useStyles, useTheme } from '@/theme/ThemeProvider';
+import type { Theme } from '@/theme/theme';
 
 const p = en.preview;
 const TEXT_VARIANTS: TextVariant[] = ['display', 'title', 'heading', 'body', 'bodyStrong', 'label', 'caption', 'price'];
+const NAIRA = { code: SAMPLE_CITY.currencyCode, symbol: '₦' };
+const ICON_SIZES = [96, 64, 48];
 
 export default function DevPreviewScreen() {
   const theme = useTheme();
-  const setBrand = useSetBrand();
   const styles = useStyles(makeStyles);
   const [activeTab, setActiveTab] = useState('home');
+  const [notice, setNotice] = useState<string | null>(null);
+  const hideNotice = useCallback(() => setNotice(null), []);
 
-  const vendorMeta = (v: (typeof SAMPLE_VENDORS)[number]) => [
-    en.vendor.minutes(v.minMinutes, v.maxMinutes),
-    en.vendor.deliveryFee(formatMoney(v.deliveryFee, SAMPLE_CITY.currencyCode)),
-  ];
-  const photoCategories = SAMPLE_CITY.categories.map((c) => ({ ...c, imageUri: unsplash(CATEGORY_PHOTOS[c.key], 600) }));
+  const vendorMeta = (v: SampleVendor) => [en.vendor.minutes(v.minMinutes, v.maxMinutes), en.vendor.deliveryFee(formatMoney(v.deliveryFee, NAIRA))];
+  const vendorCard = (v: SampleVendor) => (
+    <VendorCard
+      key={v.id}
+      name={v.name}
+      subtitle={v.cuisine}
+      imageUri={unsplash(v.photo)}
+      placeholder={unsplashPlaceholder(v.photo)}
+      meta={vendorMeta(v)}
+      rating={v.rating}
+      promo={v.promoPercent ? p.promo(v.promoPercent) : undefined}
+      closedLabel={v.isOpen ? undefined : `${en.vendor.closed} · ${en.vendor.opensAt(SAMPLE_OPENS_AT)}`}
+      onPress={() => undefined}
+    />
+  );
 
   return (
     <Screen>
+      <StatusBar style="dark" />
       <View style={styles.topRow}>
         <AppText variant="title" accessibilityRole="header" style={styles.flex}>
           {p.title}
@@ -58,97 +68,51 @@ export default function DevPreviewScreen() {
         {p.devOnly}
       </AppText>
 
-      {/* Brand switcher */}
-      <Section title={p.brand}>
-        <View style={styles.row}>
-          {BRAND_OPTIONS.map((brand) => (
-            <View key={brand} style={styles.flex}>
-              <Button
-                label={p.brandNames[brand]}
-                variant={theme.brand === brand ? 'primary' : 'secondary'}
-                onPress={() => setBrand(brand)}
-              />
-            </View>
-          ))}
-        </View>
+      <Section title={p.wordmarks}>
+        {WORDMARK_OPTIONS.map((option) => (
+          <WordmarkOptionCard key={option} option={option} />
+        ))}
       </Section>
 
       <Section title={p.sampleHome}>
-        <View style={styles.sampleHome}>
-          <AppText variant="title">{en.customerHome.greeting('Tolu')}</AppText>
-          <View style={styles.cityRow}>
-            <Icon name="location" size="sm" color={theme.colors.primary} />
-            <AppText variant="label" tone="muted">
-              {en.customerHome.deliveringIn}{' '}
-            </AppText>
-            <AppText variant="label">{SAMPLE_CITY.name}</AppText>
-          </View>
-          <SearchBar placeholder={en.customerHome.searchPlaceholder} onPress={() => undefined} />
-          <AppText variant="heading">{en.customerHome.whatDoYouNeed}</AppText>
-          <CategoryGrid categories={SAMPLE_CITY.categories} onPress={() => undefined} />
-          <AppText variant="heading">{en.customerHome.nearYou}</AppText>
-          {SAMPLE_VENDORS.slice(0, 2).map((v) => (
-            <VendorCard
-              key={v.id}
-              name={v.name}
-              subtitle={v.cuisine}
-              imageUri={unsplash(v.photo)}
-              placeholder={unsplashPlaceholder(v.photo)}
-              meta={vendorMeta(v)}
-              rating={v.rating}
-              promo={v.promoPercent ? p.promo(v.promoPercent) : undefined}
-              onPress={() => undefined}
-            />
-          ))}
+        <AppText variant="title" numberOfLines={1}>
+          {en.customerHome.greeting(SAMPLE_CUSTOMER_NAME)}
+        </AppText>
+        <View style={styles.cityRow}>
+          <Icon name="location" size="sm" color={theme.colors.primary} />
+          <AppText variant="label" tone="muted">
+            {en.customerHome.deliveringIn}{' '}
+          </AppText>
+          <AppText variant="label">{SAMPLE_CITY.name}</AppText>
         </View>
+        <SearchBar placeholder={en.customerHome.searchPlaceholder} onPress={() => setNotice(en.customerHome.searchSoon)} />
+        {notice && <Notice message={notice} onHide={hideNotice} />}
+        <AppText variant="heading">{en.customerHome.whatDoYouNeed}</AppText>
+        <CategoryGrid
+          categories={SAMPLE_CITY.categories}
+          onPress={(c) => setNotice(c.enabled ? en.customerHome.noRestaurantsTitle(SAMPLE_CITY.name) : en.categories.comingSoonTo(en.categories[c.key], SAMPLE_CITY.name))}
+        />
+        <AppText variant="heading">{en.customerHome.nearYou}</AppText>
+        {SAMPLE_VENDORS.slice(0, 2).map(vendorCard)}
       </Section>
 
-      <Section title={p.tilesCompare}>
-        <View style={styles.row}>
-          <View style={[styles.flex, styles.column]}>
-            <AppText variant="label" tone="muted">
-              {p.tileIcon}
-            </AppText>
-            <CategoryTile category="FOOD" label={en.categories.FOOD} enabled onPress={() => undefined} soonLabel={en.categories.soon} offHint={en.categories.offHint} />
-            <CategoryTile category="PHARMACY" label={en.categories.PHARMACY} enabled={false} onPress={() => undefined} soonLabel={en.categories.soon} offHint={en.categories.offHint} />
-          </View>
-          <View style={[styles.flex, styles.column]}>
-            <AppText variant="label" tone="muted">
-              {p.tilePhoto}
-            </AppText>
-            <CategoryTile category="FOOD" label={en.categories.FOOD} enabled variant="photo" imageUri={unsplash(CATEGORY_PHOTOS.FOOD, 600)} onPress={() => undefined} soonLabel={en.categories.soon} offHint={en.categories.offHint} />
-            <CategoryTile category="PHARMACY" label={en.categories.PHARMACY} enabled={false} variant="photo" imageUri={unsplash(CATEGORY_PHOTOS.PHARMACY, 600)} onPress={() => undefined} soonLabel={en.categories.soon} offHint={en.categories.offHint} />
-          </View>
+      <Section title={p.colours}>
+        <View style={styles.swatches}>
+          {(['primary', 'primaryPressed', 'primarySoft', 'background', 'surface', 'surfaceMuted', 'skeleton', 'disabled', 'border', 'text', 'textMuted', 'textSubtle', 'danger', 'dangerSoft'] as const).map((key) => (
+            <Swatch key={key} label={key} color={theme.colors[key]} />
+          ))}
+          {CATEGORIES.map((key) => (
+            <Swatch key={key} label={en.categories[key]} color={categoryColors[key].soft} accent={categoryColors[key].icon} />
+          ))}
         </View>
-        <AppText variant="label" tone="muted">
-          {p.tileIcon}
-        </AppText>
-        <CategoryGrid categories={SAMPLE_CITY.categories} onPress={() => undefined} />
-        <AppText variant="label" tone="muted">
-          {p.tilePhoto}
-        </AppText>
-        <CategoryGrid categories={photoCategories} variant="photo" onPress={() => undefined} />
       </Section>
 
       <Section title={p.typography}>
         {TEXT_VARIANTS.map((variant) => (
           <AppText key={variant} variant={variant} numberOfLines={1}>
-            {variant === 'price' ? `${variant}: ${formatMoney(250000, SAMPLE_CITY.currencyCode)}` : `${variant}: ${p.sampleText}`}
+            {variant === 'price' ? `${variant}: ${formatMoney(250000, NAIRA)} · ${formatMoney(125050, NAIRA)}` : `${variant}: ${p.sampleText}`}
           </AppText>
         ))}
-      </Section>
-
-      <Section title={p.colours}>
-        <View style={styles.swatches}>
-          {(['primary', 'primaryPressed', 'primarySoft', 'background', 'surface', 'surfaceMuted', 'border', 'text', 'textMuted', 'textSubtle', 'danger', 'dangerSoft'] as const).map((key) => (
-            <View key={key} style={styles.swatch}>
-              <View style={[styles.swatchColour, { backgroundColor: theme.colors[key] }]} />
-              <AppText variant="caption" tone="muted" numberOfLines={1}>
-                {key}
-              </AppText>
-            </View>
-          ))}
-        </View>
       </Section>
 
       <Section title={p.buttons}>
@@ -167,10 +131,6 @@ export default function DevPreviewScreen() {
         </Card>
       </Section>
 
-      <Section title={p.search}>
-        <SearchBar placeholder={en.customerHome.searchPlaceholder} onPress={() => undefined} />
-      </Section>
-
       <Section title={p.badges}>
         <View style={styles.row}>
           <PromoBadge label={p.promo(20)} />
@@ -179,20 +139,7 @@ export default function DevPreviewScreen() {
       </Section>
 
       <Section title={p.vendors}>
-        {SAMPLE_VENDORS.map((v) => (
-          <VendorCard
-            key={v.id}
-            name={v.name}
-            subtitle={v.cuisine}
-            imageUri={unsplash(v.photo)}
-            placeholder={unsplashPlaceholder(v.photo)}
-            meta={vendorMeta(v)}
-            rating={v.rating}
-            promo={v.promoPercent ? p.promo(v.promoPercent) : undefined}
-            closedLabel={v.isOpen ? undefined : en.vendor.closed}
-            onPress={() => undefined}
-          />
-        ))}
+        {SAMPLE_VENDORS.map(vendorCard)}
         <VendorCardSkeleton />
       </Section>
 
@@ -208,14 +155,13 @@ export default function DevPreviewScreen() {
         <AppText variant="caption" tone="muted">
           {p.slowImage}
         </AppText>
-        {/* A very large version loads slowly, so the blurred placeholder is visible first. */}
         <AppImage uri={unsplash(SAMPLE_VENDORS[2]!.photo, 3000)} placeholder={unsplashPlaceholder(SAMPLE_VENDORS[2]!.photo)} ratio="cover" />
         <AppImage uri={null} placeholder={{ blurhash: SAMPLE_BLURHASH }} ratio="cover" />
       </Section>
 
       <Section title={p.skeletons}>
-        <Skeleton width="70%" height={20} />
-        <Skeleton width="45%" height={14} />
+        <Skeleton width="70%" height={theme.spacing.lg} />
+        <Skeleton width="45%" height={theme.spacing.sm} />
         <CategoryGridSkeleton />
       </Section>
 
@@ -246,6 +192,55 @@ export default function DevPreviewScreen() {
   );
 }
 
+/** One wordmark option: on light, on violet, as app icons, and on the real login hero. */
+function WordmarkOptionCard({ option }: { option: WordmarkOption }) {
+  const theme = useTheme();
+  const styles = useStyles(makeStyles);
+  return (
+    <Card padded={false}>
+      <View style={styles.wordmarkBody}>
+        <AppText variant="heading">{p.wordmarkNames[option]}</AppText>
+        <AppText variant="caption" tone="muted">
+          {p.onLight}
+        </AppText>
+        <Wordmark option={option} variant="light" height={theme.sizes.heroWordmark} accessibilityLabel={en.appName} />
+      </View>
+      <View style={styles.violetStrip}>
+        <AppText variant="caption" style={styles.onViolet}>
+          {p.onViolet}
+        </AppText>
+        <Wordmark option={option} variant="dark" height={theme.sizes.heroWordmark} accessibilityLabel={en.appName} />
+      </View>
+      <View style={styles.wordmarkBody}>
+        <AppText variant="caption" tone="muted">
+          {p.appIcon}
+        </AppText>
+        <View style={styles.iconRow}>
+          {ICON_SIZES.map((size) => (
+            <Wordmark key={size} option={option} variant="icon" height={size} accessibilityLabel={`${en.appName} ${size}`} />
+          ))}
+        </View>
+        <AppText variant="caption" tone="muted">
+          {p.onHero}
+        </AppText>
+      </View>
+      <LoginHero wordmark={option} compact />
+    </Card>
+  );
+}
+
+function Swatch({ label, color, accent }: { label: string; color: string; accent?: string }) {
+  const styles = useStyles(makeStyles);
+  return (
+    <View style={styles.swatch}>
+      <View style={[styles.swatchColour, { backgroundColor: color }]}>{accent && <View style={[styles.swatchAccent, { backgroundColor: accent }]} />}</View>
+      <AppText variant="caption" tone="muted" numberOfLines={1}>
+        {label}
+      </AppText>
+    </View>
+  );
+}
+
 function Section({ title, children }: { title: string; children: ReactNode }) {
   const styles = useStyles(makeStyles);
   return (
@@ -265,10 +260,21 @@ const makeStyles = (theme: Theme) =>
     row: { flexDirection: 'row', gap: theme.spacing.sm, alignItems: 'flex-start' },
     column: { gap: theme.spacing.xs },
     section: { gap: theme.spacing.sm, marginTop: theme.spacing.lg },
-    sampleHome: { gap: theme.spacing.md, backgroundColor: theme.colors.background },
     cityRow: { flexDirection: 'row', alignItems: 'center', gap: theme.spacing.xxs },
     swatches: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.sm },
     swatch: { width: theme.sizes.swatch, gap: theme.spacing.xxs },
-    swatchColour: { height: theme.sizes.swatchHeight, borderRadius: theme.radius.md, borderWidth: StyleSheet.hairlineWidth, borderColor: theme.colors.border },
+    swatchColour: {
+      height: theme.sizes.swatchHeight,
+      borderRadius: theme.radius.md,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    swatchAccent: { width: theme.spacing.lg, height: theme.spacing.lg, borderRadius: theme.radius.pill },
     tabBarFrame: { borderRadius: theme.radius.lg, overflow: 'hidden' },
+    wordmarkBody: { padding: theme.spacing.md, gap: theme.spacing.xs },
+    violetStrip: { backgroundColor: theme.colors.primary, padding: theme.spacing.md, gap: theme.spacing.xs },
+    onViolet: { color: theme.colors.onPrimary },
+    iconRow: { flexDirection: 'row', alignItems: 'flex-end', gap: theme.spacing.md },
   });

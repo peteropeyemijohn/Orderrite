@@ -90,6 +90,8 @@ model Country {
   name            String
   /// ISO 4217 currency code, e.g. "NGN"
   currencyCode    String
+  /// Symbol shown with prices, e.g. "₦" (optional; apps fall back to the code)
+  currencySymbol  String?
   /// International dialling code with "+", e.g. "+234"
   dialCode        String
   /// IANA timezone, e.g. "Africa/Lagos"

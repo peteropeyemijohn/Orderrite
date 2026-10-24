@@ -28,7 +28,7 @@ export function VendorCard({
   meta: string[];
   rating?: number;
   promo?: string;
-  /** Shown over the photo when the vendor is closed */
+  /** Shown over the photo when the vendor is closed, e.g. "Closed · Opens at 8:00 AM" */
   closedLabel?: string;
   onPress: () => void;
 }) {

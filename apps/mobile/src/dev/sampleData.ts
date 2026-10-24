@@ -1,7 +1,6 @@
 // MADE-UP data for the dev-only design preview. Never used in real screens.
 // Photos: Unsplash (free licence, https://unsplash.com/license), checked by eye
 // to show what each label says.
-import type { Category } from 'shared';
 
 /** A photo at a given width, cropped by Unsplash's image service. */
 export function unsplash(id: string, width = 800): string {
@@ -15,14 +14,6 @@ export function unsplash(id: string, width = 800): string {
 export function unsplashPlaceholder(id: string): { uri: string } {
   return { uri: `https://images.unsplash.com/photo-${id}?w=24&q=30&blur=40&auto=format&fit=crop` };
 }
-
-export const CATEGORY_PHOTOS: Record<Category, string> = {
-  FOOD: '1504674900247-0877df9cc836',
-  SHOPS: '1542838132-92c53300491e',
-  PHARMACY: '1584308666744-24d5c474f2ae',
-  BEAUTY: '1596462502278-27bfdc403348',
-  PACKAGE: '1586528116311-ad8dd3c8310d',
-};
 
 export interface SampleVendor {
   id: string;
@@ -56,6 +47,10 @@ export const SAMPLE_CITY = {
     { key: 'PACKAGE' as const, enabled: false },
   ],
 };
+
+/** Made-up customer name (long, to test truncation) and opening time for the preview. */
+export const SAMPLE_CUSTOMER_NAME = 'Tolulope Adeyemi-Bankole';
+export const SAMPLE_OPENS_AT = '8:00 AM';
 
 /** A valid example blurhash (from the blurhash project), to show that placeholder type too. */
 export const SAMPLE_BLURHASH = 'LEHV6nWB2yk8pyo0adR*.7kCMdnj';

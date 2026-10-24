@@ -11,6 +11,8 @@ describe('toPublicCity', () => {
 
   it('takes the currency from the country, not from code', () => {
     expect(toPublicCity(city).currencyCode).toBe('NGN');
+    expect(toPublicCity(city).currencySymbol).toBeNull();
+    expect(toPublicCity({ ...city, country: { currencyCode: 'NGN', currencySymbol: '₦' } }).currencySymbol).toBe('₦');
     expect(toPublicCity({ ...city, country: { currencyCode: 'GHS' } }).currencyCode).toBe('GHS');
   });
 

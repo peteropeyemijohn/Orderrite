@@ -17,5 +17,8 @@
     "demo:db:reset": "node scripts/demo-db.mjs reset",
     "demo:db:seed": "node scripts/demo-db.mjs seed",
     "check-ip": "node scripts/check-ip-limit.mjs"
+  },
+  "devDependencies": {
+    "opentype.js": "2.0.0"
   }
 }

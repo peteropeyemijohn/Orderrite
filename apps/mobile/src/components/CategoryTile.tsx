@@ -46,6 +46,8 @@ export function CategoryTile({
   const theme = useTheme();
   const styles = useStyles(makeStyles);
   const hero = size === 'hero';
+  // Each category has its own soft tint and icon colour; "Soon" tiles stay grey.
+  const tint = theme.categoryColors[category];
 
   const soon = !enabled && (
     <View style={styles.soon}>
@@ -80,8 +82,8 @@ export function CategoryTile({
       {...a11y}
       style={[styles.iconTile, hero && styles.iconTileHero, enabled ? [styles.on, theme.shadows.md] : styles.off]}
     >
-      <View style={[styles.circle, hero && styles.circleHero, { backgroundColor: enabled ? theme.colors.primarySoft : theme.colors.surface }]}>
-        <Icon name={CATEGORY_ICONS[category]} size={hero ? 'xl' : 'lg'} color={enabled ? theme.colors.primary : theme.colors.textSubtle} />
+      <View style={[styles.circle, hero && styles.circleHero, { backgroundColor: enabled ? tint.soft : theme.colors.surface }]}>
+        <Icon name={CATEGORY_ICONS[category]} size={hero ? 'xl' : 'lg'} color={enabled ? tint.icon : theme.colors.textSubtle} />
       </View>
       <AppText variant={hero ? 'title' : 'label'} tone={enabled ? 'default' : 'muted'} numberOfLines={2} style={styles.iconLabel}>
         {label}

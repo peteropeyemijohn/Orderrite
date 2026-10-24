@@ -4,8 +4,9 @@
 import type { TextStyle, ViewStyle } from 'react-native';
 import {
   ACTIVE_BRAND,
-  BRAND_OPTIONS,
+  brandGradient,
   brandPalettes,
+  categoryColors,
   imageRatios,
   MIN_TAP_SIZE,
   neutralColors,
@@ -15,10 +16,7 @@ import {
   type BrandOption,
 } from 'shared';
 
-export { BRAND_OPTIONS, type BrandOption };
-
-/** The brand the app starts with (set once in packages/shared for mobile and web). */
-export const DEFAULT_BRAND: BrandOption = ACTIVE_BRAND;
+export type { BrandOption };
 
 /** Plus Jakarta Sans font files (loaded in the root layout). */
 export const fonts = {
@@ -72,6 +70,8 @@ export const sizes = {
   buttonMd: 48,
   buttonLg: 56,
   input: 52,
+  /** Border thickness of inputs and the country picker */
+  inputBorder: 1.5,
   searchBar: 52,
   tabItem: 52,
   tabIndicatorWidth: 56,
@@ -80,6 +80,10 @@ export const sizes = {
   iconCircle: 52,
   iconCircleLarge: 72,
   stateCircle: 80,
+  heroPhoto: 168,
+  heroWordmark: 40,
+  sheetOverlap: 28,
+  flag: 22,
   avatar: 56,
   tile: 120,
   tileHero: 140,
@@ -106,10 +110,14 @@ export const motion = {
 /** Icon sizes */
 export const iconSize = { sm: 16, md: 20, lg: 24, xl: 32, xxl: 48 } as const;
 
-export function createTheme(brand: BrandOption) {
+export function createTheme(brand: BrandOption = ACTIVE_BRAND) {
   return {
     brand,
     colors: { ...neutralColors, ...brandPalettes[brand] },
+    /** Each category's soft tint and icon colour (labels stay ink) */
+    categoryColors,
+    /** Login hero background */
+    heroGradient: `linear-gradient(160deg, ${brandGradient.from} 0%, ${brandGradient.to} 100%)`,
     spacing,
     radius,
     text: typography(),

@@ -41,7 +41,7 @@ export function CustomerHomeScreen() {
   return (
     <Screen withTabBar>
       <View style={styles.header}>
-        <AppText variant="title" accessibilityRole="header">
+        <AppText variant="title" accessibilityRole="header" numberOfLines={1}>
           {en.customerHome.greeting(user?.name)}
         </AppText>
         {state.status === 'loading' ? (

@@ -1,6 +1,7 @@
 import type { Tabs } from 'expo-router';
-import type { ComponentProps } from 'react';
+import { useEffect, useState, type ComponentProps } from 'react';
 import { StyleSheet, View } from 'react-native';
+import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withSpring } from 'react-native-reanimated';
 import { useStyles, useTheme } from '@/theme/ThemeProvider';
 import type { Theme } from '@/theme/theme';
 import { AppText } from './AppText';
@@ -16,7 +17,10 @@ export interface TabItem {
   badge?: number;
 }
 
-/** The look of the bottom tab bar (used by the real tabs and the preview). */
+/**
+ * The bottom tab bar: equal-width tabs and one rounded pill that slides to
+ * the active tab with a soft spring (it jumps when Reduce Motion is on).
+ */
 export function TabBarView({
   items,
   activeKey,
@@ -30,43 +34,60 @@ export function TabBarView({
 }) {
   const theme = useTheme();
   const styles = useStyles(makeStyles);
+  const reduceMotion = useReducedMotion();
+  const [width, setWidth] = useState(0);
+  const tabWidth = items.length > 0 ? width / items.length : 0;
+  const activeIndex = Math.max(0, items.findIndex((item) => item.key === activeKey));
+  const pillX = useSharedValue(0);
+
+  useEffect(() => {
+    if (tabWidth === 0) return;
+    const target = activeIndex * tabWidth + (tabWidth - theme.sizes.tabIndicatorWidth) / 2;
+    pillX.set(reduceMotion ? target : withSpring(target, theme.motion.spring));
+  }, [activeIndex, tabWidth, reduceMotion, pillX, theme]);
+
+  const pillStyle = useAnimatedStyle(() => ({ transform: [{ translateX: pillX.value }] }));
+
   return (
     <View style={[styles.bar, { paddingBottom: Math.max(bottomInset, theme.spacing.xs) }]} accessibilityRole="tablist">
-      {items.map((item) => {
-        const active = item.key === activeKey;
-        const color = active ? theme.colors.primary : theme.colors.textMuted;
-        return (
-          <PressableScale
-            key={item.key}
-            onPress={() => onSelect(item.key)}
-            accessibilityRole="tab"
-            accessibilityState={{ selected: active }}
-            accessibilityLabel={item.badge ? `${item.label}, ${item.badge}` : item.label}
-            style={styles.item}
-          >
-            <View style={[styles.iconPill, active && { backgroundColor: theme.colors.primarySoft }]}>
-              <Icon name={active ? item.iconActive : item.icon} size="lg" color={color} />
-              {item.badge ? (
-                <View style={styles.badge}>
-                  <AppText variant="caption" tone="onPrimary">
-                    {item.badge > 9 ? '9+' : item.badge}
-                  </AppText>
-                </View>
-              ) : null}
-            </View>
-            <AppText variant="caption" style={{ color }} numberOfLines={1}>
-              {item.label}
-            </AppText>
-          </PressableScale>
-        );
-      })}
+      <View style={styles.row} onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
+        {tabWidth > 0 && <Animated.View style={[styles.pill, pillStyle]} pointerEvents="none" />}
+        {items.map((item, index) => {
+          const active = index === activeIndex;
+          const color = active ? theme.colors.primary : theme.colors.textMuted;
+          return (
+            <PressableScale
+              key={item.key}
+              onPress={() => onSelect(item.key)}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: active }}
+              accessibilityLabel={item.badge ? `${item.label}, ${item.badge}` : item.label}
+              style={styles.item}
+            >
+              <View style={styles.iconBox}>
+                <Icon name={active ? item.iconActive : item.icon} size="lg" color={color} />
+                {item.badge ? (
+                  <View style={styles.badge}>
+                    <AppText variant="caption" tone="onPrimary">
+                      {item.badge > 9 ? '9+' : item.badge}
+                    </AppText>
+                  </View>
+                ) : null}
+              </View>
+              <AppText variant="caption" tone={active ? 'primary' : 'muted'} numberOfLines={1}>
+                {item.label}
+              </AppText>
+            </PressableScale>
+          );
+        })}
+      </View>
     </View>
   );
 }
 
 type TabBarProps = Parameters<NonNullable<ComponentProps<typeof Tabs>['tabBar']>>[0];
 
-/** Connects TabBarView to Expo Router's tabs. Icons come from each screen's options. */
+/** Connects TabBarView to Expo Router's tabs. Icons are given per route name. */
 export function makeTabBar(icons: Record<string, { icon: IconName; iconActive: IconName }>) {
   return function AppTabBar({ state, descriptors, navigation, insets }: TabBarProps) {
     const items: TabItem[] = state.routes.map((route) => {
@@ -99,7 +120,6 @@ export function makeTabBar(icons: Record<string, { icon: IconName; iconActive: I
 const makeStyles = (theme: Theme) =>
   StyleSheet.create({
     bar: {
-      flexDirection: 'row',
       backgroundColor: theme.colors.surface,
       paddingTop: theme.spacing.xs,
       paddingHorizontal: theme.spacing.xs,
@@ -107,18 +127,23 @@ const makeStyles = (theme: Theme) =>
       borderTopColor: theme.colors.border,
       ...theme.shadows.up,
     },
-    item: { flex: 1, alignItems: 'center', gap: theme.sizes.nudge, minHeight: Math.max(theme.minTap, theme.sizes.tabItem), justifyContent: 'center' },
-    iconPill: {
-      minWidth: theme.sizes.tabIndicatorWidth,
+    row: { flexDirection: 'row' },
+    // The sliding pill sits behind the active tab's icon.
+    pill: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: theme.sizes.tabIndicatorWidth,
       height: theme.sizes.tabIndicatorHeight,
       borderRadius: theme.radius.pill,
-      alignItems: 'center',
-      justifyContent: 'center',
+      backgroundColor: theme.colors.primarySoft,
     },
+    item: { flex: 1, alignItems: 'center', gap: theme.sizes.nudge, minHeight: Math.max(theme.minTap, theme.sizes.tabItem) },
+    iconBox: { height: theme.sizes.tabIndicatorHeight, justifyContent: 'center', alignItems: 'center' },
     badge: {
       position: 'absolute',
       top: -theme.sizes.nudge,
-      right: theme.spacing.xs,
+      right: -theme.spacing.sm,
       minWidth: theme.sizes.countBadge,
       height: theme.sizes.countBadge,
       paddingHorizontal: theme.spacing.xxs,

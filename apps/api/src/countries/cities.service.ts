@@ -13,6 +13,8 @@ export interface PublicCity {
   slug: string;
   name: string;
   currencyCode: string;
+  /** Added in Phase 3 (part 2); null if the country has none set */
+  currencySymbol: string | null;
   /** Every category in a fixed order, each with its on/off state for this city. */
   categories: CityCategory[];
 }
@@ -37,7 +39,7 @@ export class CitiesService {
     const city = await this.prisma.city.findFirst({
       where: { isActive: true, country: { isActive: true, isDefault: true } },
       orderBy: { createdAt: 'asc' },
-      include: { country: { select: { currencyCode: true } } },
+      include: { country: { select: { currencyCode: true, currencySymbol: true } } },
     });
     const value = city ? toPublicCity(city) : null;
     this.cached = { value, expires: Date.now() + 60 * 1000 };
@@ -50,13 +52,14 @@ export function toPublicCity(city: {
   slug: string;
   name: string;
   enabledCategories: Category[];
-  country: { currencyCode: string };
+  country: { currencyCode: string; currencySymbol?: string | null };
 }): PublicCity {
   return {
     id: city.id,
     slug: city.slug,
     name: city.name,
     currencyCode: city.country.currencyCode,
+    currencySymbol: city.country.currencySymbol ?? null,
     categories: CATEGORY_ORDER.map((key) => ({ key, enabled: city.enabledCategories.includes(key) })),
   };
 }

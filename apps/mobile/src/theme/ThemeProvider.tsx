@@ -1,30 +1,18 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
-import { createTheme, DEFAULT_BRAND, type BrandOption, type Theme } from './theme';
+import { createContext, useContext, useMemo, type ReactNode } from 'react';
+import { createTheme, type Theme } from './theme';
 
-interface ThemeContextValue {
-  theme: Theme;
-  /** Development only: switch brand colour in the design preview. */
-  setBrand: (brand: BrandOption) => void;
-}
+const ThemeContext = createContext<Theme | null>(null);
 
-const ThemeContext = createContext<ThemeContextValue | null>(null);
-
+/** Provides the Orderrite theme (Violet, chosen in Phase 3) to every component. */
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [brand, setBrand] = useState<BrandOption>(DEFAULT_BRAND);
-  const value = useMemo(() => ({ theme: createTheme(brand), setBrand }), [brand]);
-  return <ThemeContext value={value}>{children}</ThemeContext>;
+  const theme = useMemo(() => createTheme(), []);
+  return <ThemeContext value={theme}>{children}</ThemeContext>;
 }
 
 export function useTheme(): Theme {
-  const context = useContext(ThemeContext);
-  if (!context) throw new Error('useTheme must be used inside ThemeProvider');
-  return context.theme;
-}
-
-export function useSetBrand(): (brand: BrandOption) => void {
-  const context = useContext(ThemeContext);
-  if (!context) throw new Error('useSetBrand must be used inside ThemeProvider');
-  return context.setBrand;
+  const theme = useContext(ThemeContext);
+  if (!theme) throw new Error('useTheme must be used inside ThemeProvider');
+  return theme;
 }
 
 /** Builds a component's styles from the theme, rebuilt only when the theme changes. */

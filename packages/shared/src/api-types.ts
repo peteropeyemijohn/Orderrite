@@ -27,12 +27,25 @@ export interface PublicCity {
   slug: string;
   name: string;
   currencyCode: string;
+  /** e.g. "₦". Added in Phase 3 part 2: missing on older APIs. */
+  currencySymbol?: string | null;
   /** Every category in display order, with its on/off state in this city */
   categories: Array<{ key: Category; enabled: boolean }>;
 }
 
+export interface PublicCountry {
+  code: string;
+  name: string;
+  dialCode: string;
+  /** Added in Phase 3 part 2 */
+  currencyCode?: string;
+  currencySymbol?: string | null;
+}
+
 export interface PublicConfig {
-  defaultCountry: { code: string; name: string; dialCode: string };
+  defaultCountry: PublicCountry;
+  /** Countries Orderrite operates in, default first. Added in Phase 3 part 2. */
+  countries?: PublicCountry[];
   /** The city shown on the home screen. Added in Phase 3: missing on older APIs. */
   city?: PublicCity | null;
   /** Present only when the API runs in DEMO_MODE */

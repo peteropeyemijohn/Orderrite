@@ -30,7 +30,8 @@ export function Button({
 }) {
   const theme = useTheme();
   const styles = useStyles(makeStyles);
-  const { background, foreground, border } = colorsFor(theme, variant);
+  // Loading keeps the full colour (with a spinner); disabled looks clearly grey.
+  const { background, foreground, border } = disabled ? disabledColors(theme) : colorsFor(theme, variant);
   const inactive = disabled || loading;
 
   return (
@@ -44,8 +45,7 @@ export function Button({
         styles.base,
         size === 'lg' ? styles.lg : styles.md,
         { backgroundColor: background, borderColor: border, alignSelf: fullWidth ? 'stretch' : 'flex-start' },
-        variant === 'primary' && !inactive && theme.shadows.sm,
-        inactive && styles.inactive,
+        variant === 'primary' && !disabled && theme.shadows.sm,
       ]}
     >
       {loading ? (
@@ -60,6 +60,10 @@ export function Button({
       )}
     </PressableScale>
   );
+}
+
+function disabledColors(theme: Theme) {
+  return { background: theme.colors.disabled, foreground: theme.colors.textSubtle, border: theme.colors.disabled };
 }
 
 function colorsFor(theme: Theme, variant: ButtonVariant) {
@@ -89,5 +93,4 @@ const makeStyles = (theme: Theme) =>
     md: { minHeight: Math.max(theme.minTap, theme.sizes.buttonMd) },
     lg: { minHeight: Math.max(theme.minTap, theme.sizes.buttonLg) },
     row: { flexDirection: 'row', alignItems: 'center', gap: theme.spacing.xs },
-    inactive: { opacity: 0.5 },
   });

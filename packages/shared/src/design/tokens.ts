@@ -2,17 +2,14 @@
 // type sizes for the mobile app and the web dashboard. Screens never use raw
 // values; they use these (through each app's theme).
 
-export const BRAND_OPTIONS = ['violet', 'cobalt', 'ink'] as const;
+/** Orderrite's brand colour (chosen in Phase 3 from violet, cobalt and ink). */
+export const BRAND_OPTIONS = ['violet'] as const;
 export type BrandOption = (typeof BRAND_OPTIONS)[number];
 
-/**
- * The brand used by the mobile app AND the web dashboard (one place to change).
- * Phase 3: the owner compares the three options in the dev preview, then this
- * is set to the chosen one.
- */
+/** The brand used by the mobile app AND the web dashboard. */
 export const ACTIVE_BRAND: BrandOption = 'violet';
 
-/** The brand colour family. Phase 3: the owner compares the three and picks one. */
+/** The brand colour family. Violet is only for actions and active states. */
 export interface BrandPalette {
   /** Buttons, active tab, links */
   primary: string;
@@ -26,9 +23,23 @@ export interface BrandPalette {
 
 export const brandPalettes: Record<BrandOption, BrandPalette> = {
   violet: { primary: '#5B3DF5', primaryPressed: '#4A2DDB', primarySoft: '#EFEBFF', onPrimary: '#FFFFFF' },
-  cobalt: { primary: '#1E4FD8', primaryPressed: '#173FB0', primarySoft: '#E7EEFD', onPrimary: '#FFFFFF' },
-  ink: { primary: '#1C1B22', primaryPressed: '#000000', primarySoft: '#ECECEF', onPrimary: '#FFFFFF' },
 };
+
+/** Deep violet used at the bottom of the login hero gradient. */
+export const brandGradient = { from: '#6B4BFF', to: '#3A1FB8' } as const;
+
+/**
+ * Each category's own soft tint and icon colour, all at a similar lightness.
+ * Labels stay dark ink; "Soon" tiles use the neutral greys instead.
+ * Food is kept orange so it never reads as the promo red.
+ */
+export const categoryColors = {
+  FOOD: { soft: '#FFEADB', icon: '#B4500C' },
+  SHOPS: { soft: '#DCF3EF', icon: '#0B7268' },
+  PHARMACY: { soft: '#E0F4E8', icon: '#1B7646' },
+  BEAUTY: { soft: '#FCE6F0', icon: '#B02E69' },
+  PACKAGE: { soft: '#DFEFFA', icon: '#17669E' },
+} as const;
 
 /** Colours shared by every brand option. */
 export const neutralColors = {
@@ -36,8 +47,12 @@ export const neutralColors = {
   background: '#F7F7F5',
   /** Cards and sheets: pure white */
   surface: '#FFFFFF',
-  /** Skeletons, "off" tiles, input backgrounds */
+  /** "Off" tiles, input backgrounds */
   surfaceMuted: '#EFEFEC',
+  /** Loading skeletons: a little darker than surfaceMuted so the pulse is visible */
+  skeleton: '#E3E3DE',
+  /** Disabled buttons */
+  disabled: '#E7E7E3',
   border: '#E3E3DF',
   /** Main text */
   text: '#16151A',

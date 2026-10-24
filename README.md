@@ -71,6 +71,12 @@ pnpm lint
 pnpm check-secrets   # scan for keys before committing (runs automatically on commit)
 ```
 
+## Credits
+
+- Login photo: jollof rice with chicken and plantain by [Keesha's Kitchen](https://unsplash.com/photos/a-plate-of-food-b4Ht8TQ1JGo) on Unsplash ([Unsplash License](https://unsplash.com/license)).
+- Font: [Plus Jakarta Sans](https://fonts.google.com/specimen/Plus+Jakarta+Sans) (SIL Open Font License). The wordmark letters are outlines drawn from this font.
+- Icons: [Ionicons](https://ionic.io/ionicons) (MIT License).
+
 ## Security notes
 
 - No keys or secrets are stored in this repository. All settings come from environment variables, and every commit is scanned automatically.

@@ -11,6 +11,14 @@ export const en = {
   },
   auth: {
     phoneTitle: 'Enter your phone number',
+    heroTagline: 'Food you love, delivered fast.',
+    chooseCountry: 'Choose your country',
+    searchCountries: 'Search countries',
+    countryPicker: (country: string, dialCode: string) => `Country: ${country} ${dialCode}. Tap to change.`,
+    operatingIn: 'Where we deliver',
+    allCountries: 'All countries',
+    tryDemo: 'Try a demo account',
+    tryDemoHint: 'No phone needed. Tap an account, then use code',
     phoneHint: 'We will send you a 6-digit code.',
     phoneLabel: 'Phone number',
     phonePlaceholder: '803 123 4567',
@@ -61,7 +69,10 @@ export const en = {
     account: 'Account',
   },
   customerHome: {
-    greeting: (name?: string | null) => (name ? `Hello, ${name}` : 'Hello!'),
+    greeting: (name?: string | null) => {
+      const first = name?.trim().split(/\s+/)[0];
+      return first ? `Hello, ${first}` : 'Hello!';
+    },
     deliveringIn: 'Delivering in',
     searchPlaceholder: 'Search restaurants and dishes',
     searchSoon: 'Search is coming soon.',
@@ -89,6 +100,7 @@ export const en = {
     minutes: (min: number, max: number) => `${min}–${max} min`,
     deliveryFee: (fee: string) => `${fee} delivery`,
     closed: 'Closed',
+    opensAt: (time: string) => `Opens at ${time}`,
     newVendor: 'New',
   },
   states: {
@@ -100,8 +112,13 @@ export const en = {
     close: 'Close',
     devOnly: 'Development only. Not shown in the installed app.',
     openLink: 'Design preview (dev)',
-    brand: 'Brand colour',
-    brandNames: { violet: 'Violet', cobalt: 'Cobalt', ink: 'Ink' },
+    wordmarks: 'Wordmark options',
+    wordmarkNames: { a: 'A. Tick over the i', b: 'B. O ring with a tick', c: 'C. Swoosh from the e', d: 'D. Bag-handle o' },
+    onLight: 'On light',
+    onViolet: 'On violet',
+    appIcon: 'App icon sizes',
+    onHero: 'On the login hero',
+    useOnLogin: 'Use on login (dev)',
     typography: 'Typography',
     colours: 'Colours',
     buttons: 'Buttons',

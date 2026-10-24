@@ -32,11 +32,12 @@ async function main() {
   try {
     const nigeria = await prisma.country.upsert({
       where: { code: 'NG' },
-      update: { isDefault: true },
+      update: { isDefault: true, currencySymbol: '₦' },
       create: {
         code: 'NG',
         name: 'Nigeria',
         currencyCode: 'NGN',
+        currencySymbol: '₦',
         dialCode: '+234',
         timezone: 'Africa/Lagos',
         defaultLanguage: 'en',

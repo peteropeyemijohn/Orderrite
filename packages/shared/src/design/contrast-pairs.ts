@@ -1,4 +1,4 @@
-import { brandPalettes, neutralColors, type BrandOption } from './tokens.ts';
+import { brandPalettes, categoryColors, neutralColors, type BrandOption } from './tokens.ts';
 import type { ContrastLevel } from './contrast.ts';
 
 export interface ContrastPair {
@@ -30,5 +30,11 @@ export function contrastPairs(brand: BrandOption): ContrastPair[] {
     { name: 'Success text on soft green', foreground: n.success, background: n.successSoft, level: 'normal' },
     { name: '"Off" tile label (disabled, exempt) on grey', foreground: n.textSubtle, background: n.surfaceMuted, level: 'large' },
     { name: 'Placeholder text in input', foreground: n.textSubtle, background: n.surface, level: 'large' },
+    { name: 'Disabled button text (exempt) on disabled grey', foreground: n.textSubtle, background: n.disabled, level: 'large' },
+    { name: 'White text on hero gradient (lightest end)', foreground: b.onPrimary, background: '#6B4BFF', level: 'normal' },
+    ...Object.entries(categoryColors).flatMap(([key, c]) => [
+      { name: `${key} icon on its tint (icons need 3:1)`, foreground: c.icon, background: c.soft, level: 'large' as const },
+      { name: `${key} label (ink) on its tint`, foreground: n.text, background: c.soft, level: 'normal' as const },
+    ]),
   ];
 }

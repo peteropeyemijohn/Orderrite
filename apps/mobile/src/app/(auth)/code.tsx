@@ -1,4 +1,5 @@
 import { router, useLocalSearchParams } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { authErrorMessage, en, type RequestCodeResponse, type SessionResponse } from 'shared';
@@ -60,6 +61,8 @@ export default function CodeScreen() {
 
   return (
     <Screen>
+      {/* The sign-in screen behind this one uses white icons; this light screen needs dark ones. */}
+      <StatusBar style="dark" />
       <View style={styles.header}>
         <Title>{en.auth.codeTitle}</Title>
         <Body muted>{en.auth.codeSentTo(phone)}</Body>

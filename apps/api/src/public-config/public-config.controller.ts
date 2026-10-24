@@ -26,6 +26,9 @@ export class PublicConfigController {
       defaultCountry: await this.countries.getDefault(),
       // Added in Phase 3 (null if no city is active yet).
       city: await this.cities.getDefaultCity(),
+      // Added in Phase 3 part 2: countries Orderrite operates in (default first).
+      // The phone picker lists these first, then every other dialling code.
+      countries: await this.countries.getActive(),
       demo: this.env.DEMO_MODE
         ? { code: DEMO_OTP_CODE, accounts: DEMO_ACCOUNTS.map(({ phone, role, name }) => ({ phone, role, name })) }
         : null,

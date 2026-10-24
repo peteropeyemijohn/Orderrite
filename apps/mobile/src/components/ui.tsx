@@ -35,16 +35,28 @@ const KEYBOARD_BEHAVIOR = 'padding';
  * - scrolls when the content is taller than the screen (small phones, large text).
  * `centered` puts short content (loading, errors) in the middle of the screen.
  * `withTabBar` leaves the bottom edge to the tab bar, which handles it itself.
+ * `hero` lets the first child (e.g. a coloured hero) reach up behind the status
+ * bar; that child adds the top inset itself. No outer padding in this mode.
  */
-export function Screen({ children, centered, withTabBar }: { children: ReactNode; centered?: boolean; withTabBar?: boolean }) {
+export function Screen({
+  children,
+  centered,
+  withTabBar,
+  hero,
+}: {
+  children: ReactNode;
+  centered?: boolean;
+  withTabBar?: boolean;
+  hero?: boolean;
+}) {
   const styles = useStyles(makeStyles);
-  const edges: Edge[] = withTabBar ? ['top', 'left', 'right'] : ['top', 'bottom', 'left', 'right'];
+  const edges: Edge[] = hero ? ['bottom', 'left', 'right'] : withTabBar ? ['top', 'left', 'right'] : ['top', 'bottom', 'left', 'right'];
   return (
     <SafeAreaView style={styles.safe} edges={edges}>
       <KeyboardAvoidingView style={styles.flex} behavior={KEYBOARD_BEHAVIOR}>
         <ScrollView
           style={styles.flex}
-          contentContainerStyle={[styles.screen, withTabBar && styles.withTabBar, centered && styles.centered]}
+          contentContainerStyle={hero ? styles.heroScreen : [styles.screen, withTabBar && styles.withTabBar, centered && styles.centered]}
           // A tap on a button while the keyboard is open works on the first tap.
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
@@ -159,11 +171,12 @@ const makeStyles = (theme: Theme) =>
       gap: theme.spacing.md,
     },
     withTabBar: { paddingBottom: theme.spacing.xl },
+    heroScreen: { flexGrow: 1 },
     centered: { justifyContent: 'center' },
     inputGroup: { gap: theme.spacing.xxs },
     input: {
       minHeight: Math.max(theme.minTap, theme.sizes.input),
-      borderWidth: 1.5,
+      borderWidth: theme.sizes.inputBorder,
       borderColor: theme.colors.border,
       borderRadius: theme.radius.md,
       paddingHorizontal: theme.spacing.md,
