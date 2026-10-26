@@ -130,6 +130,11 @@ Goal: the app works without the owner's laptop, for a remote testing partner and
 - `formatMoney(amount, { code, symbol })`: symbol from country data (new `Country.currencySymbol`, migration `20261024014831_country_currency_symbol`), no ".00" for whole amounts, own thousand grouping (same on Android and iPhone).
 - `/config/public` adds `countries` and `currencySymbol` fields (additive).
 
+**Part 2 fixes (2026-10-26)**
+- Tab bar bug: `PressableScale` put layout styles on an inner view, so `flex: 1` never reached the touch area and tabs shrank to their text; the pill position was calculated, not measured. Fixed: one animated Pressable; the pill is placed from each tab's measured layout. Verified in a browser (react-native-web + Playwright screenshots): 4 equal tabs, pill centred on the active tab.
+- Wordmark A chosen: bold tick (stem-thick), `accentOnViolet` tick on violet (4.04:1 on the lightest hero colour). Icon candidates: "o" with tick, tick inside the "o" (ring with a real gap), tick on a white tile; full-bleed, mark inside the Android safe zone (66/108); preview shows circle and rounded-square crops.
+- Tagline option "Order right. Delivered fast." shown in the preview. Food icon brighter (#D2600E, 3.33:1). Heading "Your phone number". One label for the whole phone row. Thicker custom spinner. Web preview: token storage is skipped on web (no secure storage there).
+
 ## Phase 4: Admin panel, vendor dashboard and seed data
 - Admin: add, approve and suspend vendors and riders. See orders. Edit city fee settings. Basic totals.
 - Vendor dashboard (works on a phone browser): items (name, price, photo, sold out), open/closed toggle

@@ -2,7 +2,6 @@
 // and full-screen loading / error views. All values come from the theme.
 import { useEffect, useState, type ReactNode } from 'react';
 import {
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -17,6 +16,7 @@ import { useStyles, useTheme } from '@/theme/ThemeProvider';
 import type { Theme } from '@/theme/theme';
 import { AppText } from './AppText';
 import { Icon } from './Icon';
+import { Spinner } from './Spinner';
 import { ErrorState } from './States';
 
 /**
@@ -90,16 +90,20 @@ export function ErrorText({ children }: { children: ReactNode }) {
   );
 }
 
-export function Input(props: TextInputProps & { label: string }) {
+/** Text field. `label` is shown above it; leave it out when a row-level label is shown instead. */
+export function Input(props: TextInputProps & { label?: string }) {
   const theme = useTheme();
   const styles = useStyles(makeStyles);
   const [focused, setFocused] = useState(false);
   return (
     <View style={styles.inputGroup}>
-      <AppText variant="label" tone="muted">
-        {props.label}
-      </AppText>
+      {props.label && (
+        <AppText variant="label" tone="muted">
+          {props.label}
+        </AppText>
+      )}
       <TextInput
+        accessibilityLabel={props.accessibilityLabel ?? props.label}
         placeholderTextColor={theme.colors.textSubtle}
         {...props}
         onFocus={(e) => {
@@ -119,6 +123,7 @@ export function Input(props: TextInputProps & { label: string }) {
 /** Loading state. After a few seconds, explains that the server may be waking up. */
 export function LoadingView() {
   const theme = useTheme();
+  const styles = useStyles(makeStyles);
   const [slow, setSlow] = useState(false);
   useEffect(() => {
     const timer = setTimeout(() => setSlow(true), 5000);
@@ -126,7 +131,9 @@ export function LoadingView() {
   }, []);
   return (
     <Screen centered>
-      <ActivityIndicator size="large" color={theme.colors.primary} />
+      <View style={styles.centerSelf}>
+        <Spinner size="lg" color={theme.colors.primary} />
+      </View>
       <AppText tone="muted" align="center">
         {slow ? en.common.firstLoadSlow : en.common.loading}
       </AppText>
@@ -173,6 +180,7 @@ const makeStyles = (theme: Theme) =>
     withTabBar: { paddingBottom: theme.spacing.xl },
     heroScreen: { flexGrow: 1 },
     centered: { justifyContent: 'center' },
+    centerSelf: { alignSelf: 'center' },
     inputGroup: { gap: theme.spacing.xxs },
     input: {
       minHeight: Math.max(theme.minTap, theme.sizes.input),

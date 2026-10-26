@@ -1,9 +1,10 @@
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useStyles, useTheme } from '@/theme/ThemeProvider';
 import type { Theme } from '@/theme/theme';
 import { AppText } from './AppText';
 import { Icon, type IconName } from './Icon';
 import { PressableScale } from './PressableScale';
+import { Spinner } from './Spinner';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 
@@ -49,7 +50,7 @@ export function Button({
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={foreground} />
+        <Spinner color={foreground} />
       ) : (
         <View style={styles.row}>
           {icon && <Icon name={icon} size="md" color={foreground} />}
@@ -84,7 +85,7 @@ const makeStyles = (theme: Theme) =>
   StyleSheet.create({
     base: {
       borderRadius: theme.radius.pill,
-      borderWidth: 1,
+      borderWidth: theme.sizes.buttonBorder,
       alignItems: 'center',
       justifyContent: 'center',
       paddingHorizontal: theme.spacing.xl,

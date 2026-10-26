@@ -6,7 +6,8 @@ import { StatusBar } from 'expo-status-bar';
 import { useCallback, useState, type ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { categoryColors, CATEGORIES, en, formatMoney } from 'shared';
-import { WORDMARK_OPTIONS, type WordmarkOption } from '@/brand/wordmarks';
+import { Image } from 'expo-image';
+import { ICON_CANDIDATES, ICON_SAFE_ZONE, ICONS, type IconCandidate } from '@/brand/wordmarks';
 import { AppImage } from '@/components/AppImage';
 import { AppText, type TextVariant } from '@/components/AppText';
 import { Button } from '@/components/Button';
@@ -68,10 +69,45 @@ export default function DevPreviewScreen() {
         {p.devOnly}
       </AppText>
 
-      <Section title={p.wordmarks}>
-        {WORDMARK_OPTIONS.map((option) => (
-          <WordmarkOptionCard key={option} option={option} />
+      <Section title={p.wordmark}>
+        <Card padded={false}>
+          <View style={styles.wordmarkBody}>
+            <AppText variant="caption" tone="muted">
+              {p.onLight}
+            </AppText>
+            <Wordmark variant="light" height={theme.sizes.heroWordmark} accessibilityLabel={en.appName} />
+          </View>
+          <View style={styles.violetStrip}>
+            <AppText variant="caption" style={styles.onViolet}>
+              {p.onViolet}
+            </AppText>
+            <Wordmark variant="dark" height={theme.sizes.heroWordmark} accessibilityLabel={en.appName} />
+          </View>
+        </Card>
+      </Section>
+
+      <Section title={p.iconCandidates}>
+        <AppText variant="caption" tone="muted">
+          {p.safeZone}
+        </AppText>
+        {ICON_CANDIDATES.map((candidate) => (
+          <IconCandidateCard key={candidate} candidate={candidate} />
         ))}
+      </Section>
+
+      <Section title={p.taglines}>
+        <AppText variant="label" tone="muted">
+          {p.taglineCurrent}
+        </AppText>
+        <View style={styles.heroFrame}>
+          <LoginHero tagline={en.auth.heroTagline} compact />
+        </View>
+        <AppText variant="label" tone="muted">
+          {p.taglineOption}
+        </AppText>
+        <View style={styles.heroFrame}>
+          <LoginHero tagline={en.auth.heroTaglineAlt} compact />
+        </View>
       </Section>
 
       <Section title={p.sampleHome}>
@@ -109,7 +145,7 @@ export default function DevPreviewScreen() {
 
       <Section title={p.typography}>
         {TEXT_VARIANTS.map((variant) => (
-          <AppText key={variant} variant={variant} numberOfLines={1}>
+          <AppText key={variant} variant={variant}>
             {variant === 'price' ? `${variant}: ${formatMoney(250000, NAIRA)} · ${formatMoney(125050, NAIRA)}` : `${variant}: ${p.sampleText}`}
           </AppText>
         ))}
@@ -192,39 +228,40 @@ export default function DevPreviewScreen() {
   );
 }
 
-/** One wordmark option: on light, on violet, as app icons, and on the real login hero. */
-function WordmarkOptionCard({ option }: { option: WordmarkOption }) {
+/** One icon candidate: circle and rounded-square crops at 3 sizes, and a large one with the safe zone. */
+function IconCandidateCard({ candidate }: { candidate: IconCandidate }) {
   const theme = useTheme();
   const styles = useStyles(makeStyles);
+  const large = theme.sizes.iconPreviewLarge;
+  const icon = (size: number, mask: 'circle' | 'rounded') => (
+    <Image
+      key={`${mask}-${size}`}
+      source={ICONS[candidate].source}
+      contentFit="cover"
+      accessibilityLabel={`${p.iconNames[candidate]} ${size}`}
+      // Launchers crop the full-bleed square: a circle, or a rounded square (~22% corners).
+      style={{ width: size, height: size, borderRadius: mask === 'circle' ? size / 2 : size * 0.22 }}
+    />
+  );
   return (
-    <Card padded={false}>
-      <View style={styles.wordmarkBody}>
-        <AppText variant="heading">{p.wordmarkNames[option]}</AppText>
-        <AppText variant="caption" tone="muted">
-          {p.onLight}
-        </AppText>
-        <Wordmark option={option} variant="light" height={theme.sizes.heroWordmark} accessibilityLabel={en.appName} />
+    <Card>
+      <AppText variant="heading">{p.iconNames[candidate]}</AppText>
+      <View style={styles.iconLarge}>
+        {icon(large, 'circle')}
+        {/* The dashed circle is the Android adaptive-icon safe zone. */}
+        <View
+          pointerEvents="none"
+          style={[styles.safeZone, { width: large * ICON_SAFE_ZONE, height: large * ICON_SAFE_ZONE, borderRadius: (large * ICON_SAFE_ZONE) / 2 }]}
+        />
       </View>
-      <View style={styles.violetStrip}>
-        <AppText variant="caption" style={styles.onViolet}>
-          {p.onViolet}
-        </AppText>
-        <Wordmark option={option} variant="dark" height={theme.sizes.heroWordmark} accessibilityLabel={en.appName} />
-      </View>
-      <View style={styles.wordmarkBody}>
-        <AppText variant="caption" tone="muted">
-          {p.appIcon}
-        </AppText>
-        <View style={styles.iconRow}>
-          {ICON_SIZES.map((size) => (
-            <Wordmark key={size} option={option} variant="icon" height={size} accessibilityLabel={`${en.appName} ${size}`} />
-          ))}
-        </View>
-        <AppText variant="caption" tone="muted">
-          {p.onHero}
-        </AppText>
-      </View>
-      <LoginHero wordmark={option} compact />
+      <AppText variant="caption" tone="muted">
+        {p.circleMask}
+      </AppText>
+      <View style={styles.iconRow}>{ICON_SIZES.map((size) => icon(size, 'circle'))}</View>
+      <AppText variant="caption" tone="muted">
+        {p.roundedMask}
+      </AppText>
+      <View style={styles.iconRow}>{ICON_SIZES.map((size) => icon(size, 'rounded'))}</View>
     </Card>
   );
 }
@@ -277,4 +314,7 @@ const makeStyles = (theme: Theme) =>
     violetStrip: { backgroundColor: theme.colors.primary, padding: theme.spacing.md, gap: theme.spacing.xs },
     onViolet: { color: theme.colors.onPrimary },
     iconRow: { flexDirection: 'row', alignItems: 'flex-end', gap: theme.spacing.md },
+    iconLarge: { alignSelf: 'center', alignItems: 'center', justifyContent: 'center' },
+    safeZone: { position: 'absolute', borderWidth: theme.sizes.nudge, borderStyle: 'dashed', borderColor: theme.colors.onPrimary },
+    heroFrame: { borderRadius: theme.radius.lg, overflow: 'hidden' },
   });

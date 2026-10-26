@@ -1,27 +1,23 @@
 import { Image } from 'expo-image';
-import { WORDMARKS, type WordmarkOption } from '@/brand/wordmarks';
+import { WORDMARK } from '@/brand/wordmarks';
 import { useTheme } from '@/theme/ThemeProvider';
 
 /**
- * The Orderrite wordmark: one SVG drawing per option (letters are outlines
- * from the font, so it looks identical on every phone). "light" = for light
- * backgrounds, "dark" = white letters for the violet hero.
+ * The Orderrite wordmark (option A, chosen in Phase 3): one SVG drawing whose
+ * letters are outlines from the font, with a bold tick as the dot of the "i".
+ * "light" = for light backgrounds, "dark" = white letters for violet.
  */
-export const DEFAULT_WORDMARK: WordmarkOption = 'a';
-
 export function Wordmark({
-  option = DEFAULT_WORDMARK,
   variant = 'light',
   height,
   accessibilityLabel,
 }: {
-  option?: WordmarkOption;
-  variant?: 'light' | 'dark' | 'icon';
+  variant?: 'light' | 'dark';
   height?: number;
   accessibilityLabel: string;
 }) {
   const theme = useTheme();
-  const file = WORDMARKS[option][variant];
+  const file = WORDMARK[variant];
   const h = height ?? theme.sizes.heroWordmark;
   return (
     <Image

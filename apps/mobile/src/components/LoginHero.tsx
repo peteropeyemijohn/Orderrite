@@ -2,11 +2,10 @@ import { Image } from 'expo-image';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { en } from 'shared';
-import type { WordmarkOption } from '@/brand/wordmarks';
 import { useStyles, useTheme } from '@/theme/ThemeProvider';
 import type { Theme } from '@/theme/theme';
 import { AppText } from './AppText';
-import { DEFAULT_WORDMARK, Wordmark } from './Wordmark';
+import { Wordmark } from './Wordmark';
 
 /** Our own hero photo: jollof rice, chicken and plantain (Keesha's Kitchen, Unsplash licence). */
 const HERO_PHOTO = require('../../assets/images/hero-jollof.jpg');
@@ -15,15 +14,15 @@ const HERO_PHOTO = require('../../assets/images/hero-jollof.jpg');
  * The violet gradient hero at the top of the login screen: wordmark, a short
  * line, and a food photo. It reaches up behind the status bar (white icons).
  */
-export function LoginHero({ wordmark = DEFAULT_WORDMARK, compact = false }: { wordmark?: WordmarkOption; compact?: boolean }) {
+export function LoginHero({ tagline = en.auth.heroTagline, compact = false }: { tagline?: string; compact?: boolean }) {
   const theme = useTheme();
   const styles = useStyles(makeStyles);
   const insets = useSafeAreaInsets();
   return (
     <View style={[styles.hero, { paddingTop: (compact ? 0 : insets.top) + theme.spacing.xl }]}>
-      <Wordmark option={wordmark} variant="dark" accessibilityLabel={en.appName} />
+      <Wordmark variant="dark" accessibilityLabel={en.appName} />
       <AppText variant="bodyStrong" style={styles.tagline}>
-        {en.auth.heroTagline}
+        {tagline}
       </AppText>
       <View style={styles.photoFrame}>
         <Image source={HERO_PHOTO} contentFit="cover" style={styles.photo} accessible={false} />

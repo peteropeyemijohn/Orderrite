@@ -55,19 +55,26 @@ export default function PhoneScreen() {
           <Body muted>{en.auth.phoneHint}</Body>
         </View>
 
-        <View style={styles.row}>
-          <CountryPicker value={selected} active={activeCountries} onChange={setCountry} />
-          <View style={styles.flex}>
-            <Input
-              label={en.auth.phoneLabel}
-              value={phone}
+        {/* One label for the whole row (country + number), so both line up. */}
+        <View style={styles.phoneGroup}>
+          <AppText variant="label" tone="muted" nativeID="phone-label">
+            {en.auth.phoneLabel}
+          </AppText>
+          <View style={styles.row} accessibilityLabelledBy="phone-label">
+            <CountryPicker value={selected} active={activeCountries} onChange={setCountry} />
+            <View style={styles.flex}>
+              <Input
+                accessibilityLabel={en.auth.phoneLabel}
+                accessibilityLabelledBy="phone-label"
+                value={phone}
               onChangeText={setPhone}
               placeholder={en.auth.phonePlaceholder}
               keyboardType="phone-pad"
               autoComplete="tel"
               textContentType="telephoneNumber"
-              maxLength={20}
-            />
+                maxLength={20}
+              />
+            </View>
           </View>
         </View>
 
@@ -127,7 +134,8 @@ const makeStyles = (theme: Theme) =>
       gap: theme.spacing.md,
     },
     heading: { gap: theme.spacing.xxs },
-    row: { flexDirection: 'row', alignItems: 'flex-end', gap: theme.spacing.xs },
+    phoneGroup: { gap: theme.spacing.xxs },
+    row: { flexDirection: 'row', alignItems: 'stretch', gap: theme.spacing.xs },
     flex: { flex: 1 },
     demo: {
       gap: theme.spacing.xs,

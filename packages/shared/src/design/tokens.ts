@@ -28,13 +28,16 @@ export const brandPalettes: Record<BrandOption, BrandPalette> = {
 /** Deep violet used at the bottom of the login hero gradient. */
 export const brandGradient = { from: '#6B4BFF', to: '#3A1FB8' } as const;
 
+/** Accent on violet backgrounds (e.g. the wordmark tick on the hero): near-white lilac. */
+export const accentOnViolet = '#E6E0FF';
+
 /**
  * Each category's own soft tint and icon colour, all at a similar lightness.
  * Labels stay dark ink; "Soon" tiles use the neutral greys instead.
  * Food is kept orange so it never reads as the promo red.
  */
 export const categoryColors = {
-  FOOD: { soft: '#FFEADB', icon: '#B4500C' },
+  FOOD: { soft: '#FFEADB', icon: '#D2600E' },
   SHOPS: { soft: '#DCF3EF', icon: '#0B7268' },
   PHARMACY: { soft: '#E0F4E8', icon: '#1B7646' },
   BEAUTY: { soft: '#FCE6F0', icon: '#B02E69' },

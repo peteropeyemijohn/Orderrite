@@ -1,5 +1,6 @@
 import type { Tabs } from 'expo-router';
-import { useEffect, useState, type ComponentProps } from 'react';
+import { useEffect, useRef, useState, type ComponentProps } from 'react';
+import type { LayoutRectangle } from 'react-native';
 import { StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withSpring } from 'react-native-reanimated';
 import { useStyles, useTheme } from '@/theme/ThemeProvider';
@@ -35,29 +36,37 @@ export function TabBarView({
   const theme = useTheme();
   const styles = useStyles(makeStyles);
   const reduceMotion = useReducedMotion();
-  const [width, setWidth] = useState(0);
-  const tabWidth = items.length > 0 ? width / items.length : 0;
   const activeIndex = Math.max(0, items.findIndex((item) => item.key === activeKey));
+  // Each tab reports where it really is on screen; the pill centres on the active one.
+  const [layouts, setLayouts] = useState<Record<string, LayoutRectangle>>({});
+  const activeLayout = layouts[items[activeIndex]?.key ?? ''];
   const pillX = useSharedValue(0);
+  const placed = useRef(false);
 
   useEffect(() => {
-    if (tabWidth === 0) return;
-    const target = activeIndex * tabWidth + (tabWidth - theme.sizes.tabIndicatorWidth) / 2;
-    pillX.set(reduceMotion ? target : withSpring(target, theme.motion.spring));
-  }, [activeIndex, tabWidth, reduceMotion, pillX, theme]);
+    if (!activeLayout) return;
+    const target = activeLayout.x + (activeLayout.width - theme.sizes.tabIndicatorWidth) / 2;
+    // First placement (and Reduce Motion) jumps; later changes slide with a spring.
+    pillX.set(reduceMotion || !placed.current ? target : withSpring(target, theme.motion.spring));
+    placed.current = true;
+  }, [activeLayout, reduceMotion, pillX, theme]);
 
   const pillStyle = useAnimatedStyle(() => ({ transform: [{ translateX: pillX.value }] }));
 
   return (
     <View style={[styles.bar, { paddingBottom: Math.max(bottomInset, theme.spacing.xs) }]} accessibilityRole="tablist">
-      <View style={styles.row} onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
-        {tabWidth > 0 && <Animated.View style={[styles.pill, pillStyle]} pointerEvents="none" />}
+      <View style={styles.row}>
+        {activeLayout && <Animated.View style={[styles.pill, pillStyle]} pointerEvents="none" />}
         {items.map((item, index) => {
           const active = index === activeIndex;
           const color = active ? theme.colors.primary : theme.colors.textMuted;
           return (
             <PressableScale
               key={item.key}
+              onLayout={(e) => {
+                const layout = e.nativeEvent.layout;
+                setLayouts((current) => (current[item.key]?.x === layout.x && current[item.key]?.width === layout.width ? current : { ...current, [item.key]: layout }));
+              }}
               onPress={() => onSelect(item.key)}
               accessibilityRole="tab"
               accessibilityState={{ selected: active }}
@@ -138,7 +147,8 @@ const makeStyles = (theme: Theme) =>
       borderRadius: theme.radius.pill,
       backgroundColor: theme.colors.primarySoft,
     },
-    item: { flex: 1, alignItems: 'center', gap: theme.sizes.nudge, minHeight: Math.max(theme.minTap, theme.sizes.tabItem) },
+    // Each tab takes an equal quarter (flex: 1 of 4); a small gap separates icon and label.
+    item: { flex: 1, alignItems: 'center', gap: theme.spacing.xxs, minHeight: Math.max(theme.minTap, theme.sizes.tabItem) },
     iconBox: { height: theme.sizes.tabIndicatorHeight, justifyContent: 'center', alignItems: 'center' },
     badge: {
       position: 'absolute',

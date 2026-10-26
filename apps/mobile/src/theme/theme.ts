@@ -72,6 +72,8 @@ export const sizes = {
   input: 52,
   /** Border thickness of inputs and the country picker */
   inputBorder: 1.5,
+  /** Border thickness of secondary buttons */
+  buttonBorder: 1,
   searchBar: 52,
   tabItem: 52,
   tabIndicatorWidth: 56,
@@ -82,6 +84,13 @@ export const sizes = {
   stateCircle: 80,
   heroPhoto: 168,
   heroWordmark: 40,
+  /** Spinner: diameter and line thickness (thicker than the system one) */
+  spinner: 22,
+  spinnerLarge: 40,
+  spinnerStroke: 3,
+  spinnerStrokeLarge: 4,
+  /** App icon previews */
+  iconPreviewLarge: 160,
   sheetOverlap: 28,
   flag: 22,
   avatar: 56,
