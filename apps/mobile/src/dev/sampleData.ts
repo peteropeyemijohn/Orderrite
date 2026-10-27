@@ -49,6 +49,9 @@ export const SAMPLE_CITY = {
 };
 
 /** Made-up customer name (long, to test truncation) and opening time for the preview. */
+/** A made-up demo customer, to preview the account card. */
+export const SAMPLE_DEMO_USER = { id: 'sample', phone: '+2340000000001', name: 'Demo Customer', role: 'CUSTOMER', isDemo: true } as const;
+
 export const SAMPLE_CUSTOMER_NAME = 'Tolulope Adeyemi-Bankole';
 export const SAMPLE_OPENS_AT = '8:00 AM';
 

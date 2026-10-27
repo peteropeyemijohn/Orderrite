@@ -59,7 +59,7 @@ export const shadows = {
   md: { boxShadow: `0px 2px 6px ${shadowColor} 0.04), 0px 8px 24px ${shadowColor} 0.08)` } as ViewStyle,
   lg: { boxShadow: `0px 4px 12px ${shadowColor} 0.05), 0px 16px 40px ${shadowColor} 0.12)` } as ViewStyle,
   /** Upwards, for bars that sit at the bottom of the screen */
-  up: { boxShadow: `0px -4px 24px ${shadowColor} 0.06)` } as ViewStyle,
+  up: { boxShadow: `0px -1px 3px ${shadowColor} 0.05), 0px -6px 20px ${shadowColor} 0.07)` } as ViewStyle,
 };
 
 /**
@@ -81,6 +81,7 @@ export const sizes = {
   countBadge: 18,
   iconCircle: 52,
   iconCircleLarge: 72,
+  tileArrow: 40,
   stateCircle: 80,
   heroPhoto: 168,
   heroWordmark: 40,
@@ -92,6 +93,8 @@ export const sizes = {
   /** App icon previews */
   iconPreviewLarge: 160,
   sheetOverlap: 28,
+  dialogMaxWidth: 360,
+  divider: 1,
   flag: 22,
   avatar: 56,
   tile: 120,

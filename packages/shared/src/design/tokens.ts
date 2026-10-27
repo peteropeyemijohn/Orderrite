@@ -57,6 +57,8 @@ export const neutralColors = {
   /** Disabled buttons */
   disabled: '#E7E7E3',
   border: '#E3E3DF',
+  /** A dividing line that must be noticed (e.g. above the tab bar) */
+  divider: '#D3D3CD',
   /** Main text */
   text: '#16151A',
   /** Secondary text (meets WCAG AA on background and surface) */

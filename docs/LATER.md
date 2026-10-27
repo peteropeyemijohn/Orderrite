@@ -9,7 +9,7 @@ Ideas and features that are **not** in Plan A. When something new comes up durin
 
 ## Customer experience (suggested in Phase 3)
 - Delivery address picker on the home screen ("Delivering to …", change address)
-- Replace the app icon and splash screen with the chosen wordmark (native change: next planned EAS build)
+- Replace the app icon and splash screen with the chosen icon (`assets/brand/icon.svg`, tick inside the "o") and wordmark (native change: next planned EAS build)
 
 ## Moved out of Plan A
 - Push notifications for order updates (Firebase Cloud Messaging)

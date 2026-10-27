@@ -17,7 +17,9 @@ export const CATEGORY_ICONS: Record<Category, IconName> = {
 };
 
 /**
- * Big friendly tile for a category. Two styles to compare in Phase 3:
+ * Big friendly tile for a category. The wide "hero" tile also shows a short
+ * subtitle and an arrow, so it is clearly the main way in.
+ * Two styles to compare in Phase 3:
  * "icon" (icon on a tinted circle) and "photo" (photo with a label).
  * Categories that are off are softened, show a "Soon" label, and stay
  * tappable so the screen can explain they are coming soon.
@@ -25,6 +27,7 @@ export const CATEGORY_ICONS: Record<Category, IconName> = {
 export function CategoryTile({
   category,
   label,
+  subtitle,
   enabled,
   onPress,
   variant = 'icon',
@@ -35,6 +38,7 @@ export function CategoryTile({
 }: {
   category: Category;
   label: string;
+  subtitle?: string;
   enabled: boolean;
   onPress: () => void;
   variant?: 'icon' | 'photo';
@@ -58,7 +62,7 @@ export function CategoryTile({
   );
 
   const a11y = {
-    accessibilityLabel: enabled ? label : `${label}, ${offHint}`,
+    accessibilityLabel: [label, subtitle, !enabled && offHint].filter(Boolean).join(', '),
     accessibilityState: { disabled: !enabled },
   };
 
@@ -85,9 +89,21 @@ export function CategoryTile({
       <View style={[styles.circle, hero && styles.circleHero, { backgroundColor: enabled ? tint.soft : theme.colors.surface }]}>
         <Icon name={CATEGORY_ICONS[category]} size={hero ? 'xl' : 'lg'} color={enabled ? tint.icon : theme.colors.textSubtle} />
       </View>
-      <AppText variant={hero ? 'title' : 'label'} tone={enabled ? 'default' : 'muted'} numberOfLines={2} style={styles.iconLabel}>
-        {label}
-      </AppText>
+      <View style={[styles.iconText, hero && styles.iconTextHero]}>
+        <AppText variant={hero ? 'title' : 'label'} tone={enabled ? 'default' : 'muted'} numberOfLines={2}>
+          {label}
+        </AppText>
+        {subtitle && (
+          <AppText variant="label" tone="muted" numberOfLines={2}>
+            {subtitle}
+          </AppText>
+        )}
+      </View>
+      {hero && enabled && (
+        <View style={styles.arrow}>
+          <Icon name="arrow-forward" size="md" color={theme.colors.onPrimary} />
+        </View>
+      )}
       {soon}
     </PressableScale>
   );
@@ -107,7 +123,17 @@ const makeStyles = (theme: Theme) =>
     off: { backgroundColor: theme.colors.surfaceMuted },
     circle: { width: theme.sizes.iconCircle, height: theme.sizes.iconCircle, borderRadius: theme.radius.pill, alignItems: 'center', justifyContent: 'center' },
     circleHero: { width: theme.sizes.iconCircleLarge, height: theme.sizes.iconCircleLarge },
-    iconLabel: { flexShrink: 1 },
+    iconText: { flexShrink: 1, gap: theme.sizes.nudge },
+    // In the wide tile the text takes the free space, pushing the arrow to the right edge.
+    iconTextHero: { flexGrow: 1 },
+    arrow: {
+      width: theme.sizes.tileArrow,
+      height: theme.sizes.tileArrow,
+      borderRadius: theme.radius.pill,
+      backgroundColor: theme.colors.primary,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
     soon: {
       position: 'absolute',
       top: theme.spacing.sm,

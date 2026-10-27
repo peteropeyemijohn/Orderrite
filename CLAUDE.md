@@ -123,6 +123,6 @@ Launch city is Akure, Nigeria, but the product will expand to other Nigerian cit
 - Mobile: use `useTheme()` / `useStyles(makeStyles)` from `src/theme/ThemeProvider.tsx`, `AppText` for all text, and the components in `src/components/`. No raw colours, sizes or strings in screens (sizes go in `theme.sizes`). Font: Plus Jakarta Sans, import single weights only.
 - Web: Tailwind classes map to the same tokens (`bg-primary`, `text-muted`, `rounded-card`, `shadow-soft`), set in `src/lib/design-tokens.ts` + `globals.css`.
 - Red is for promos and alerts only. No yellow or green brand colour.
-- Brand files: `node scripts/generate-wordmarks.mjs` (after `pnpm build:shared`) regenerates the wordmark (A) and icon candidates as SVGs from the font outlines into `apps/mobile/assets/brand/` plus `src/brand/wordmarks.ts`.
+- Brand files: `node scripts/generate-wordmarks.mjs` (after `pnpm build:shared`) regenerates the wordmark (A) and the app icon as SVGs from the font outlines into `apps/mobile/assets/brand/` plus `src/brand/wordmarks.ts`.
 - `PressableScale` is a single animated Pressable: layout styles (flex, alignSelf) work on it directly.
 - Before shipping mobile changes as an EAS Update, check the fingerprint is unchanged: `pnpm exec expo-updates fingerprint:generate --platform android` in apps/mobile, compared with the installed build's runtime version. Don't add native packages without asking (new build).

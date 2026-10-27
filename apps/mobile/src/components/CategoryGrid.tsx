@@ -32,6 +32,7 @@ export function CategoryGrid({
       key={category.key}
       category={category.key}
       label={en.categories[category.key]}
+      subtitle={size === 'hero' ? en.categories.subtitles[category.key] : undefined}
       enabled={category.enabled}
       variant={variant}
       size={size}

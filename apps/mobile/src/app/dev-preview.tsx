@@ -1,4 +1,4 @@
-// DEVELOPMENT ONLY: every component in every state, the wordmark options, and
+// DEVELOPMENT ONLY: every component in every state, the brand (wordmark, icon), and
 // a sample home with made-up vendors. Guarded by __DEV__ in the root layout,
 // so the installed app can never open it.
 import { router } from 'expo-router';
@@ -7,7 +7,8 @@ import { useCallback, useState, type ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { categoryColors, CATEGORIES, en, formatMoney } from 'shared';
 import { Image } from 'expo-image';
-import { ICON_CANDIDATES, ICON_SAFE_ZONE, ICONS, type IconCandidate } from '@/brand/wordmarks';
+import { ICON, ICON_SAFE_ZONE } from '@/brand/wordmarks';
+import { AccountCard } from '@/components/AccountCard';
 import { AppImage } from '@/components/AppImage';
 import { AppText, type TextVariant } from '@/components/AppText';
 import { Button } from '@/components/Button';
@@ -24,7 +25,7 @@ import { TabBarView } from '@/components/TabBar';
 import { Screen } from '@/components/ui';
 import { VendorCard } from '@/components/VendorCard';
 import { Wordmark } from '@/components/Wordmark';
-import { SAMPLE_BLURHASH, SAMPLE_CITY, SAMPLE_CUSTOMER_NAME, SAMPLE_OPENS_AT, SAMPLE_VENDORS, unsplash, unsplashPlaceholder, type SampleVendor } from '@/dev/sampleData';
+import { SAMPLE_BLURHASH, SAMPLE_CITY, SAMPLE_CUSTOMER_NAME, SAMPLE_DEMO_USER, SAMPLE_OPENS_AT, SAMPLE_VENDORS, unsplash, unsplashPlaceholder, type SampleVendor } from '@/dev/sampleData';
 import { useStyles, useTheme } from '@/theme/ThemeProvider';
 import type { Theme } from '@/theme/theme';
 
@@ -86,27 +87,16 @@ export default function DevPreviewScreen() {
         </Card>
       </Section>
 
-      <Section title={p.iconCandidates}>
+      <Section title={p.appIcon}>
         <AppText variant="caption" tone="muted">
           {p.safeZone}
         </AppText>
-        {ICON_CANDIDATES.map((candidate) => (
-          <IconCandidateCard key={candidate} candidate={candidate} />
-        ))}
+        <IconCard />
       </Section>
 
-      <Section title={p.taglines}>
-        <AppText variant="label" tone="muted">
-          {p.taglineCurrent}
-        </AppText>
+      <Section title={p.loginHero}>
         <View style={styles.heroFrame}>
-          <LoginHero tagline={en.auth.heroTagline} compact />
-        </View>
-        <AppText variant="label" tone="muted">
-          {p.taglineOption}
-        </AppText>
-        <View style={styles.heroFrame}>
-          <LoginHero tagline={en.auth.heroTaglineAlt} compact />
+          <LoginHero compact />
         </View>
       </Section>
 
@@ -165,6 +155,10 @@ export default function DevPreviewScreen() {
           <AppText variant="heading">{p.cardTitle}</AppText>
           <AppText tone="muted">{p.cardBody}</AppText>
         </Card>
+      </Section>
+
+      <Section title={p.accountCard}>
+        <AccountCard user={SAMPLE_DEMO_USER} />
       </Section>
 
       <Section title={p.badges}>
@@ -228,24 +222,23 @@ export default function DevPreviewScreen() {
   );
 }
 
-/** One icon candidate: circle and rounded-square crops at 3 sizes, and a large one with the safe zone. */
-function IconCandidateCard({ candidate }: { candidate: IconCandidate }) {
+/** The app icon: circle and rounded-square crops at 3 sizes, and a large one with the safe zone. */
+function IconCard() {
   const theme = useTheme();
   const styles = useStyles(makeStyles);
   const large = theme.sizes.iconPreviewLarge;
   const icon = (size: number, mask: 'circle' | 'rounded') => (
     <Image
       key={`${mask}-${size}`}
-      source={ICONS[candidate].source}
+      source={ICON.source}
       contentFit="cover"
-      accessibilityLabel={`${p.iconNames[candidate]} ${size}`}
+      accessibilityLabel={`${p.appIcon} ${size}`}
       // Launchers crop the full-bleed square: a circle, or a rounded square (~22% corners).
       style={{ width: size, height: size, borderRadius: mask === 'circle' ? size / 2 : size * 0.22 }}
     />
   );
   return (
     <Card>
-      <AppText variant="heading">{p.iconNames[candidate]}</AppText>
       <View style={styles.iconLarge}>
         {icon(large, 'circle')}
         {/* The dashed circle is the Android adaptive-icon safe zone. */}

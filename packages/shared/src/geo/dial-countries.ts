@@ -26,3 +26,21 @@ export function internationalNumber(typed: string, country: DialCountry, default
   const digits = cleaned.replace(/\D/g, '').replace(/^0+/, '');
   return `${country.dialCode}${digits}`;
 }
+
+/**
+ * Makes a stored international number easy to read, e.g.
+ * "+2340000000001" → "+234 000 000 0001". The dialling code comes from the
+ * reference list (longest match). The rest is grouped simply: the last 4
+ * digits together, the digits before them in threes. Anything that doesn't
+ * look like an international number is returned unchanged.
+ */
+export function formatPhone(international: string): string {
+  if (!/^\+\d{6,15}$/.test(international)) return international;
+  const dialCode = DIAL_COUNTRIES.map((c) => c.dialCode)
+    .filter((code) => international.startsWith(code))
+    .sort((a, b) => b.length - a.length)[0];
+  if (!dialCode) return international;
+  const national = international.slice(dialCode.length);
+  const head = national.slice(0, -4).match(/\d{1,3}/g) ?? [];
+  return [dialCode, ...head, national.slice(-4)].join(' ');
+}

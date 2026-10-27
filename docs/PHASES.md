@@ -135,6 +135,13 @@ Goal: the app works without the owner's laptop, for a remote testing partner and
 - Wordmark A chosen: bold tick (stem-thick), `accentOnViolet` tick on violet (4.04:1 on the lightest hero colour). Icon candidates: "o" with tick, tick inside the "o" (ring with a real gap), tick on a white tile; full-bleed, mark inside the Android safe zone (66/108); preview shows circle and rounded-square crops.
 - Tagline option "Order right. Delivered fast." shown in the preview. Food icon brighter (#D2600E, 3.33:1). Heading "Your phone number". One label for the whole phone row. Thicker custom spinner. Web preview: token storage is skipped on web (no secure storage there).
 
+**Part 2 decisions and small fixes (2026-10-28)**
+- Chosen: wordmark A, app icon 2 (tick inside the "o", now with a thicker ring and a heavier, off-centre tick whose arm sweeps out through the gap), tagline "Order right. Delivered fast.". Other candidates and the old tagline removed. The icon goes live with the next planned build (see LATER).
+- Food tile: subtitle "Restaurants near you" (per-category subtitles in i18n) and an arrow.
+- Account card: name, number formatted by `formatPhone()` (shared, dialling code from the country list, e.g. `+234 000 000 0001`), "Demo account" chip for demo users; role hidden.
+- Tab bar: a visible 1 px `divider` line and a slightly stronger upward shadow (pill unchanged).
+- Log out asks first (`ConfirmDialog`, an in-app Modal: Cancel, tap outside and Android back all close it). Used on the customer, rider and staff screens via `LogOutButton`.
+
 ## Phase 4: Admin panel, vendor dashboard and seed data
 - Admin: add, approve and suspend vendors and riders. See orders. Edit city fee settings. Basic totals.
 - Vendor dashboard (works on a phone browser): items (name, price, photo, sold out), open/closed toggle

@@ -14,7 +14,7 @@ const HERO_PHOTO = require('../../assets/images/hero-jollof.jpg');
  * The violet gradient hero at the top of the login screen: wordmark, a short
  * line, and a food photo. It reaches up behind the status bar (white icons).
  */
-export function LoginHero({ tagline = en.auth.heroTagline, compact = false }: { tagline?: string; compact?: boolean }) {
+export function LoginHero({ compact = false }: { compact?: boolean }) {
   const theme = useTheme();
   const styles = useStyles(makeStyles);
   const insets = useSafeAreaInsets();
@@ -22,7 +22,7 @@ export function LoginHero({ tagline = en.auth.heroTagline, compact = false }: { 
     <View style={[styles.hero, { paddingTop: (compact ? 0 : insets.top) + theme.spacing.xl }]}>
       <Wordmark variant="dark" accessibilityLabel={en.appName} />
       <AppText variant="bodyStrong" style={styles.tagline}>
-        {tagline}
+        {en.auth.heroTagline}
       </AppText>
       <View style={styles.photoFrame}>
         <Image source={HERO_PHOTO} contentFit="cover" style={styles.photo} accessible={false} />

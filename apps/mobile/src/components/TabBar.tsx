@@ -132,8 +132,9 @@ const makeStyles = (theme: Theme) =>
       backgroundColor: theme.colors.surface,
       paddingTop: theme.spacing.xs,
       paddingHorizontal: theme.spacing.xs,
-      borderTopWidth: StyleSheet.hairlineWidth,
-      borderTopColor: theme.colors.border,
+      // A full 1 px line (a hairline is too thin to see on sharp screens) plus a soft shadow.
+      borderTopWidth: theme.sizes.divider,
+      borderTopColor: theme.colors.divider,
       ...theme.shadows.up,
     },
     row: { flexDirection: 'row' },
