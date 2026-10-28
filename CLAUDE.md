@@ -94,9 +94,12 @@ Launch city is Akure, Nigeria, but the product will expand to other Nigerian cit
 - Demo database (Neon `demo` branch, via `apps/api/.env.demo`): `pnpm demo:db:reset` / `pnpm demo:db:seed`
 - Live IP rate-limit check: `pnpm check-ip https://<api>.onrender.com [--burst]` (needs `IP_DEBUG=true` on Render)
 - After changing `packages/shared`, rebuild it: `pnpm build:shared`
+- Docker (API + local Postgres, fake values only): `docker compose up --build`, stop with `docker compose down -v`. Image: `apps/api/Dockerfile` (build from the repo root). Not used by Render or Vercel.
+- CI: `.github/workflows/ci.yml` runs install, secret scan, typecheck, lint, tests and a Docker smoke test on every push. Actions are pinned to commit SHAs; no repo secrets.
 
 ## Project notes
 - API is NestJS 12 (ESM, Vitest). Prisma 7 with the `pg` driver adapter; the generated client lives in `apps/api/src/generated/prisma` (git-ignored, rebuilt on install).
+- The `prisma` CLI is a devDependency (only migrations and the seed need it); the running API uses `@prisma/client` + `@prisma/adapter-pg` (pure JS, no engine binaries).
 - Prisma reads `DIRECT_URL` (migrations, seed); the running API uses the pooled `DATABASE_URL`. Both use `sslmode=verify-full`.
 - `packages/shared` is compiled to `dist/` (CommonJS) and imported as `shared` by all apps.
 - Mobile on a real phone needs `EXPO_PUBLIC_API_URL` set to the Mac's Wi-Fi address, not localhost.

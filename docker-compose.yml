@@ -1,0 +1,64 @@
+# Runs the Orderrite API with its own local Postgres database:
+#   docker compose up --build        (stop with Ctrl+C; add -d to run in the background)
+#   docker compose down -v           (remove containers AND the local database)
+#
+# LOCAL USE ONLY. Every value below is fake and only works inside these
+# containers. This is not how the demo is deployed (Render and Vercel deploy
+# as before) and it never touches Neon.
+name: orderrite
+
+services:
+  # A throwaway Postgres database, only reachable by the other containers.
+  db:
+    image: postgres:17.11-alpine
+    environment:
+      POSTGRES_USER: orderrite
+      POSTGRES_PASSWORD: fake-local-password
+      POSTGRES_DB: orderrite
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U orderrite -d orderrite']
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+  # One-off job: creates the tables (migrations) and the starting data
+  # (Nigeria, Akure, fee settings), then exits. It uses the "build" stage,
+  # which has the Prisma tools; the API image itself stays slim.
+  migrate:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      target: build
+    environment:
+      DIRECT_URL: postgresql://orderrite:fake-local-password@db:5432/orderrite
+      DATABASE_URL: postgresql://orderrite:fake-local-password@db:5432/orderrite
+      DEMO_MODE: 'false'
+    command: ['sh', '-c', 'pnpm --filter api db:deploy && pnpm --filter api db:seed']
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # The API (the slim "runtime" image), on http://localhost:4000
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://orderrite:fake-local-password@db:5432/orderrite
+      # "development" prints sign-in codes in `docker compose logs api`,
+      # so you can sign in without SMS. The image itself defaults to production.
+      NODE_ENV: development
+      CORS_ORIGINS: http://localhost:3000
+      JWT_ACCESS_SECRET: fake-local-docker-jwt-secret-not-for-real-use-000001
+      OTP_HASH_SECRET: fake-local-docker-otp-secret-not-for-real-use-000002
+      DEMO_MODE: 'false'
+    ports:
+      - '4000:4000'
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+volumes:
+  db-data:

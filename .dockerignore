@@ -1,0 +1,19 @@
+# What Docker may see when building (the "build context").
+# Everything is excluded first, then only what the API image needs is let
+# back in. Safer than listing what to leave out: a new secret file can never
+# slip into an image by accident.
+*
+!package.json
+!pnpm-lock.yaml
+!pnpm-workspace.yaml
+!tsconfig.base.json
+!packages/shared/
+!apps/api/
+
+# ...but never these, even inside the folders above:
+**/.env*
+**/node_modules
+**/dist
+**/*.tsbuildinfo
+**/coverage
+apps/api/src/generated

@@ -1,10 +1,22 @@
 # Orderrite
 
-Orderrite is a multi-category delivery app (food, shops, pharmacy, beauty and package delivery), starting in Akure, Nigeria, in the style of Glovo and Chowdeck. Customers order and track deliveries in a mobile app, independent riders deliver, vendors manage orders in a web dashboard, and an admin runs the platform.
+[![CI](https://github.com/peteropeyemijohn/Orderrite/actions/workflows/ci.yml/badge.svg)](https://github.com/peteropeyemijohn/Orderrite/actions/workflows/ci.yml)
+
+**Order right. Delivered fast.**
+
+Orderrite is a multi-category delivery app for Nigerian cities, starting in Akure, in the style of Glovo and Chowdeck. Customers order food (and later shop, pharmacy, beauty and package deliveries) in a mobile app, independent riders deliver, vendors manage orders in a web dashboard, and an admin runs the platform.
 
 It is built to grow: countries, cities, currencies and fees are data, not code.
 
-> **Status:** private test version (Plan A). Food in Akure only. Payments run in Paystack **test mode**, so no real money is involved.
+> **Honest scope:** this is the **Plan A test version**: **food only, Akure only**. Payments will run in Paystack **test mode** (no real money), and sign-in uses a fixed test code instead of SMS. Ordering, payments and rider tracking are still being built (see [the phase list](docs/PHASES.md)). What works today: sign-in for all four roles, the design system, the home screen and the deployed demo.
+
+<p>
+  <img src="docs/screenshots/login.png" alt="Login screen: Orderrite wordmark, tagline and a phone number field" width="260">
+  &nbsp;&nbsp;
+  <img src="docs/screenshots/home.png" alt="Home screen: a large Food tile, other categories marked Soon, and the bottom tab bar" width="260">
+</p>
+
+<sub>Screenshots from the app's web preview. On Android the login header is a violet gradient.</sub>
 
 ## Try the live demo
 
@@ -37,8 +49,9 @@ Installing the Android app: open the APK link on an Android phone, tap **Install
 - **Web (vendor dashboard + admin panel):** Next.js (App Router), Tailwind CSS
 - **API:** NestJS (REST), Prisma, PostgreSQL (Neon)
 - **Auth:** phone number + one-time code, short-lived JWT access tokens and rotating refresh tokens
+- **Shared package:** types, translations, design tokens and money formatting used by all three apps
 - **Hosting (demo):** Render (API), Vercel (web), Neon (database), EAS Build (Android)
-- **Monorepo:** pnpm workspaces (`apps/api`, `apps/web`, `apps/mobile`, `packages/shared`)
+- **Tooling:** pnpm workspaces monorepo, Docker, GitHub Actions (type check, lint, tests, secret scan and a Docker smoke test on every push)
 
 ## Run it locally
 
@@ -70,6 +83,40 @@ pnpm typecheck
 pnpm lint
 pnpm check-secrets   # scan for keys before committing (runs automatically on commit)
 ```
+
+## Run with Docker
+
+The API also runs in Docker, with its own local Postgres database. No accounts, keys or `.env` files are needed: every value in `docker-compose.yml` is a fake, local-only value.
+
+```bash
+docker compose up --build
+```
+
+This starts three containers:
+
+1. **db**: a local PostgreSQL 17 database.
+2. **migrate**: creates the tables and the starting data (Nigeria, Akure, fee settings), then exits.
+3. **api**: the API on http://localhost:4000, from a slim multi-stage image that runs as a non-root user and has a built-in health check.
+
+Then check it:
+
+```bash
+curl http://localhost:4000/health          # {"status":"ok","database":"ok",...}
+curl http://localhost:4000/config/public   # country, city (Akure) and currency
+docker compose logs api                    # sign-in codes appear here (local only)
+docker compose down -v                     # stop and delete the local database
+```
+
+The image is defined in [`apps/api/Dockerfile`](apps/api/Dockerfile). The live demo still deploys to Render without Docker.
+
+## How I built it
+
+I built Orderrite with **[Claude Code](https://claude.com/claude-code)**, an AI coding assistant, as my pair programmer. I'm new to app development, so the split was:
+
+- **Me:** the product (the [PRD](docs/PRD.md)) and its scope, approving the phase plan, every product and design decision (brand colour, wordmark, icon, tagline), all accounts and dashboards (GitHub, Neon, Render, Vercel, Expo), handling every secret myself (none were ever pasted into the AI chat), reviewing each plan before any code was written, and testing every phase on real Android phones and an iPhone.
+- **Claude Code:** most of the code, the tests, the deployment setup and plain-language explanations of each step, working one phase at a time under the rules in [`CLAUDE.md`](CLAUDE.md).
+
+Guard rails I insisted on: a secret scan on every commit (and across the full history before any push), money stored as whole numbers in kobo, prices calculated only on the server, permission checks on every endpoint, and Paystack in test mode only.
 
 ## Credits
 
