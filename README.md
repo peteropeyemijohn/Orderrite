@@ -95,7 +95,7 @@ docker compose up --build
 This starts three containers:
 
 1. **db**: a local PostgreSQL 17 database.
-2. **migrate**: creates the tables and the starting data (Nigeria, Akure, fee settings), then exits.
+2. **migrate**: creates the tables and the starting data (Nigeria, Akure, fee settings and a local admin with the fake number `+234 000 000 0099`), then exits.
 3. **api**: the API on http://localhost:4000, from a slim multi-stage image that runs as a non-root user and has a built-in health check.
 
 Then check it:

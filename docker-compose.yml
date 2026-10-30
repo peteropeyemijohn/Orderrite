@@ -24,8 +24,8 @@ services:
       retries: 30
 
   # One-off job: creates the tables (migrations) and the starting data
-  # (Nigeria, Akure, fee settings), then exits. It uses the "build" stage,
-  # which has the Prisma tools; the API image itself stays slim.
+  # (Nigeria, Akure, fee settings, a local admin), then exits. It uses the
+  # "build" stage, which has the Prisma tools; the API image itself stays slim.
   migrate:
     build:
       context: .
@@ -35,6 +35,10 @@ services:
       DIRECT_URL: postgresql://orderrite:fake-local-password@db:5432/orderrite
       DATABASE_URL: postgresql://orderrite:fake-local-password@db:5432/orderrite
       DEMO_MODE: 'false'
+      # Outside demo mode the seed always creates one admin. A fake number
+      # that only exists in this local database (sign in with the code
+      # printed in `docker compose logs api`).
+      ADMIN_PHONE: '+2340000000099'
     command: ['sh', '-c', 'pnpm --filter api db:deploy && pnpm --filter api db:seed']
     depends_on:
       db:
