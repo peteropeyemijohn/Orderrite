@@ -11,6 +11,10 @@ generator client {
   provider     = "prisma-client"
   output       = "../src/generated/prisma"
   moduleFormat = "esm"
+  // Always import generated files as ".js" (what Node runs after compiling).
+  // Without this, Prisma guesses from tsconfig.json and picks ".ts" when it
+  // runs before tsconfig.json exists (as in the Docker install step).
+  importFileExtension = "js"
 }
 
 // The connection URL lives in prisma.config.ts (read from environment variables).
