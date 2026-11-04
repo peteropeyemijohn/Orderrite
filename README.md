@@ -4,11 +4,13 @@
 
 **Order right. Delivered fast.**
 
-Orderrite is a multi-category delivery app for Nigerian cities, starting in Akure, in the style of Glovo and Chowdeck. Customers order food (and later shop, pharmacy, beauty and package deliveries) in a mobile app, independent riders deliver, vendors manage orders in a web dashboard, and an admin runs the platform.
+Orderrite is a multi-category delivery app for Nigerian cities, starting in Akure, inspired by apps like Glovo and Chowdeck. Not affiliated with them. Customers order food (and later shop, pharmacy, beauty and package deliveries) in a mobile app, independent riders deliver, vendors manage orders in a web dashboard, and an admin runs the platform.
 
 It is built to grow: countries, cities, currencies and fees are data, not code.
 
-> **Honest scope:** this is the **Plan A test version**: **food only, Akure only**. Payments will run in Paystack **test mode** (no real money), and sign-in uses a fixed test code instead of SMS. Ordering, payments and rider tracking are still being built (see [the phase list](docs/PHASES.md)). What works today: sign-in for all four roles, the design system, the home screen and the deployed demo.
+> **Honest scope:** this is the **first test version**: **food only, Akure only**. Payments will run in Paystack **test mode** (no real money), and sign-in uses a fixed test code instead of SMS. Ordering, payments and rider tracking are still being built (see [the phase list](docs/PHASES.md)). What works today: sign-in for all four roles, the design system, the home screen and the deployed demo.
+
+**Project docs:** [product requirements (PRD)](docs/PRD.md) · [phase list and status](docs/PHASES.md)
 
 <p>
   <img src="docs/screenshots/login.png" alt="Login screen: Orderrite wordmark, tagline and a phone number field" width="260">
@@ -25,6 +27,8 @@ It is built to grow: countries, cities, currencies and fees are data, not code.
 | Web dashboard (admin / vendor) | https://orderrite-apps.vercel.app |
 | Android app (APK) | https://expo.dev/accounts/kalprice5/projects/orderrite/builds/cd624097-c278-459c-ac96-6e825a4e1b43 |
 | API health check | https://orderrite-api.onrender.com/health |
+
+The APK link may expire. The web demo keeps working.
 
 ⏳ **The first load can take about a minute.** The demo runs on free hosting that sleeps when nobody is using it. After it wakes up, it is fast.
 
@@ -55,6 +59,35 @@ Installing the Android app: open the APK link on an Android phone, tap **Install
 
 ## Run it locally
 
+### Quickest: Docker (API only, no accounts needed)
+
+The API runs in Docker with its own local Postgres database. No accounts, keys or `.env` files are needed: every value in `docker-compose.yml` is a fake, local-only value.
+
+```bash
+docker compose up --build
+```
+
+This starts three containers:
+
+1. **db**: a local PostgreSQL 17 database.
+2. **migrate**: creates the tables and the starting data (Nigeria, Akure, fee settings and a local admin with the fake number `+234 000 000 0099`), then exits.
+3. **api**: the API on http://localhost:4000, from a slim multi-stage image that runs as a non-root user and has a built-in health check.
+
+Then check it:
+
+```bash
+curl http://localhost:4000/health          # {"status":"ok","database":"ok",...}
+curl http://localhost:4000/config/public   # country, city (Akure) and currency
+docker compose logs api                    # sign-in codes appear here (local only)
+docker compose down -v                     # stop and delete the local database
+```
+
+Verified in GitHub Actions on every push and in a GitHub Codespace.
+
+The image is defined in [`apps/api/Dockerfile`](apps/api/Dockerfile). The live demo still deploys to Render without Docker.
+
+### Full setup with Neon
+
 You need Node.js 24, pnpm, a free [Neon](https://neon.tech) PostgreSQL database and, for the phone app, [Expo Go](https://expo.dev/go).
 
 ```bash
@@ -84,37 +117,13 @@ pnpm lint
 pnpm check-secrets   # scan for keys before committing (runs automatically on commit)
 ```
 
-## Run with Docker
-
-The API also runs in Docker, with its own local Postgres database. No accounts, keys or `.env` files are needed: every value in `docker-compose.yml` is a fake, local-only value.
-
-```bash
-docker compose up --build
-```
-
-This starts three containers:
-
-1. **db**: a local PostgreSQL 17 database.
-2. **migrate**: creates the tables and the starting data (Nigeria, Akure, fee settings and a local admin with the fake number `+234 000 000 0099`), then exits.
-3. **api**: the API on http://localhost:4000, from a slim multi-stage image that runs as a non-root user and has a built-in health check.
-
-Then check it:
-
-```bash
-curl http://localhost:4000/health          # {"status":"ok","database":"ok",...}
-curl http://localhost:4000/config/public   # country, city (Akure) and currency
-docker compose logs api                    # sign-in codes appear here (local only)
-docker compose down -v                     # stop and delete the local database
-```
-
-The image is defined in [`apps/api/Dockerfile`](apps/api/Dockerfile). The live demo still deploys to Render without Docker.
-
 ## How I built it
 
 I built Orderrite with **[Claude Code](https://claude.com/claude-code)**, an AI coding assistant, as my pair programmer. I'm new to app development, so the split was:
 
-- **Me:** the product (the [PRD](docs/PRD.md)) and its scope, approving the phase plan, every product and design decision (brand colour, wordmark, icon, tagline), all accounts and dashboards (GitHub, Neon, Render, Vercel, Expo), handling every secret myself (none were ever pasted into the AI chat), reviewing each plan before any code was written, and testing every phase on real Android phones and an iPhone.
-- **Claude Code:** most of the code, the tests, the deployment setup and plain-language explanations of each step, working one phase at a time under the rules in [`CLAUDE.md`](CLAUDE.md).
+- **Me:** the product idea and scope (the [PRD](docs/PRD.md)), approving the phase plan and every plan before any code was written, all product and design decisions (brand colour, wordmark, icon, tagline), creating and configuring every account and dashboard (GitHub, Neon, Render, Vercel, Expo), and testing each phase on a real Android phone.
+- **Claude Code:** most of the code, the tests, the deployment setup and plain-language explanations, working one phase at a time under the rules in [`CLAUDE.md`](CLAUDE.md).
+- **Secrets:** I created the accounts and entered the real values myself, in git-ignored env files and in the hosting dashboards. I kept them out of the chat. Claude Code wrote the safeguards: ignore rules, and a scanner that runs on every commit and across the full history. Because an AI assistant working in my project folder can read local files, the public demo uses separate demo and test credentials only.
 
 Guard rails I insisted on: a secret scan on every commit (and across the full history before any push), money stored as whole numbers in kobo, prices calculated only on the server, permission checks on every endpoint, and Paystack in test mode only.
 
@@ -127,5 +136,10 @@ Guard rails I insisted on: a secret scan on every commit (and across the full hi
 ## Security notes
 
 - No keys or secrets are stored in this repository. All settings come from environment variables, and every commit is scanned automatically.
-- Prices and totals are calculated on the server. Every API endpoint checks who is signed in and their role.
+- Protected endpoints require sign-in, and a role check is built in for endpoints limited to admins or vendors.
+- Prices and totals will be calculated only on the server (ordering arrives in a later phase).
 - Sign-in codes and refresh tokens are stored only as hashes. Login is rate limited per phone number and per IP address.
+
+---
+
+Copyright © 2026 Peter Opeyemi John. All rights reserved. · [GitHub: peteropeyemijohn](https://github.com/peteropeyemijohn)
