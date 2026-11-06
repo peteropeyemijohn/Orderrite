@@ -4,7 +4,7 @@
 
 **Order right. Delivered fast.**
 
-Orderrite is a multi-category delivery app for Nigerian cities, starting in Akure, inspired by apps like Glovo and Chowdeck. Not affiliated with them. Customers order food (and later shop, pharmacy, beauty and package deliveries) in a mobile app, independent riders deliver, vendors manage orders in a web dashboard, and an admin runs the platform.
+Orderrite is a multi-category delivery app for Nigerian cities, starting in Akure, inspired by apps like Glovo and Chowdeck. Not affiliated with them. When finished, customers order food (and later shop, pharmacy, beauty and package deliveries) in a mobile app, independent riders deliver, vendors manage orders in a web dashboard, and an admin runs the platform.
 
 It is built to grow: countries, cities, currencies and fees are data, not code.
 
@@ -24,7 +24,7 @@ It is built to grow: countries, cities, currencies and fees are data, not code.
 
 | | Link |
 |---|---|
-| Web dashboard (admin / vendor) | https://orderrite-apps.vercel.app |
+| Web dashboard (sign-in works; admin and vendor pages coming) | https://orderrite-apps.vercel.app |
 | Android app (APK) | https://expo.dev/accounts/kalprice5/projects/orderrite/builds/cd624097-c278-459c-ac96-6e825a4e1b43 |
 | API health check | https://orderrite-api.onrender.com/health |
 
@@ -53,7 +53,7 @@ Installing the Android app: open the APK link on an Android phone, tap **Install
 - **Web (vendor dashboard + admin panel):** Next.js (App Router), Tailwind CSS
 - **API:** NestJS (REST), Prisma, PostgreSQL (Neon)
 - **Auth:** phone number + one-time code, short-lived JWT access tokens and rotating refresh tokens
-- **Shared package:** types, translations, design tokens and money formatting used by all three apps
+- **Shared package:** types, translations, design tokens and money formatting, shared by the mobile and web apps
 - **Hosting (demo):** Render (API), Vercel (web), Neon (database), EAS Build (Android)
 - **Tooling:** pnpm workspaces monorepo, Docker, GitHub Actions (type check, lint, tests, secret scan and a Docker smoke test on every push)
 
@@ -125,7 +125,7 @@ I built Orderrite with **[Claude Code](https://claude.com/claude-code)**, an AI 
 - **Claude Code:** most of the code, the tests, the deployment setup and plain-language explanations, working one phase at a time under the rules in [`CLAUDE.md`](CLAUDE.md).
 - **Secrets:** I created the accounts and entered the real values myself, in git-ignored env files and in the hosting dashboards. I kept them out of the chat. Claude Code wrote the safeguards: ignore rules, and a scanner that runs on every commit and across the full history. Because an AI assistant working in my project folder can read local files, the public demo uses separate demo and test credentials only.
 
-Guard rails I insisted on: a secret scan on every commit (and across the full history before any push), money stored as whole numbers in kobo, prices calculated only on the server, permission checks on every endpoint, and Paystack in test mode only.
+Guard rails I insisted on: a secret scan on every commit (and across the full history before any push), money stored as whole numbers in kobo, prices to be calculated only on the server, permission checks on protected endpoints, and Paystack in test mode only.
 
 ## Credits
 
