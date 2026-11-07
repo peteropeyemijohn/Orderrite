@@ -13,7 +13,7 @@ Launch city is Akure, Nigeria, but the product will expand to other Nigerian cit
 - Paystack runs in **test mode only**. Never use live keys.
 - Use a **fixed test OTP** (printed in the server log) instead of a real SMS provider. Keep the SMS code behind an interface so a real provider can be added later.
 - The test version is **deployed online** (from Phase 2b), so remote testers and employers can use it without my laptop: API on Render (free tier), web on Vercel, Android test builds through EAS Build. Phase 1 stays local.
-- The repo may become **public** (portfolio project). All configuration goes in environment variables. **Before every commit, scan the staged files for keys and secrets** (`pnpm check-secrets`) and stop if anything is found.
+- This repository is **public** (or about to be), as a portfolio project. All configuration goes in environment variables. **Before every commit, scan the staged files for keys and secrets** (`pnpm check-secrets`) and stop if anything is found.
 - `DEMO_MODE` is ON only in the demo deployment: demo accounts (customer, rider, vendor, admin) with a published fixed login code, plus seeded test vendors and menus. Login is rate limited. **Never enable DEMO_MODE in a real launch.**
 - Roles: nobody can choose the ADMIN or VENDOR role themselves. The first admin is created by the seed script from `ADMIN_PHONE`. Vendors are created by the admin.
 - No store submission yet. Android test builds only (iOS needs a paid Apple account).
@@ -51,6 +51,7 @@ Launch city is Akure, Nigeria, but the product will expand to other Nigerian cit
 - Order statuses: PENDING_PAYMENT, PLACED, ACCEPTED, PREPARING, READY, PICKED_UP, DELIVERED, CANCELLED, REJECTED.
 - Categories: FOOD, SHOPS, PHARMACY, BEAUTY, PACKAGE. Package delivery has no vendor.
 - Pharmacy: over-the-counter products only in v1, and only approved pharmacies.
+- Treat this repository as public. Never commit real personal data, real vendor or customer information, or private business plans. If a document needs those, tell me and I will keep it outside the repo.
 
 ## Built to grow (cities and countries)
 - **Never hard-code** "Akure", "Nigeria", "NGN", "₦", "+234" or Naira-specific logic inside screens or business logic. Read them from data.
