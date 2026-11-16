@@ -128,5 +128,6 @@ Launch city is Akure, Nigeria, but the product will expand to other Nigerian cit
 - Web: Tailwind classes map to the same tokens (`bg-primary`, `text-muted`, `rounded-card`, `shadow-soft`), set in `src/lib/design-tokens.ts` + `globals.css`.
 - Red is for promos and alerts only. No yellow or green brand colour.
 - Brand files: `node scripts/generate-wordmarks.mjs` (after `pnpm build:shared`) regenerates the wordmark (A) and the app icon as SVGs from the font outlines into `apps/mobile/assets/brand/` plus `src/brand/wordmarks.ts`.
+- Login hero orbit: photos in `apps/mobile/src/components/heroOrbitItems.ts` (any number, one per category; credits in the README; light colours, simple shapes, no logos or readable text, 256 px tiles with a baked-in shadow, light from above-left, never rotated), speed/ring/bob in `theme.orbit`. Photos on photos/violet use `Glass` (no blur package; `expo-blur` planned for the SDK 58 build, see LATER).
 - `PressableScale` is a single animated Pressable: layout styles (flex, alignSelf) work on it directly.
 - Before shipping mobile changes as an EAS Update, check the fingerprint is unchanged: `pnpm exec expo-updates fingerprint:generate --platform android` in apps/mobile, compared with the installed build's runtime version. Don't add native packages without asking (new build).

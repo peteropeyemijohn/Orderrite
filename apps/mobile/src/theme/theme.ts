@@ -7,12 +7,14 @@ import {
   brandGradient,
   brandPalettes,
   categoryColors,
+  glass,
   imageRatios,
   MIN_TAP_SIZE,
   neutralColors,
   radius,
   spacing,
   typeScale,
+  withAlpha,
   type BrandOption,
 } from 'shared';
 
@@ -83,7 +85,6 @@ export const sizes = {
   iconCircleLarge: 72,
   tileArrow: 40,
   stateCircle: 80,
-  heroPhoto: 168,
   heroWordmark: 40,
   /** Spinner: diameter and line thickness (thicker than the system one) */
   spinner: 22,
@@ -95,6 +96,8 @@ export const sizes = {
   sheetOverlap: 28,
   dialogMaxWidth: 360,
   divider: 1,
+  /** Thin light border of Glass chips */
+  glassBorder: 1,
   flag: 22,
   avatar: 56,
   tile: 120,
@@ -119,6 +122,29 @@ export const motion = {
   pulse: 1100,
 } as const;
 
+/**
+ * The login hero orbit: photos circling the wordmark on an oval path.
+ * Change the number of photos in src/components/heroOrbitItems.ts.
+ */
+export const orbit = {
+  /** Half-width of the oval (shrinks on narrow phones so photos stay on screen) */
+  ringRadiusX: 150,
+  /** Half-height of the oval */
+  ringRadiusY: 112,
+  /** Width and height of each photo tile (the item fills ~83%; the rest is its baked-in shadow) */
+  itemSize: 64,
+  /** Space kept between a photo and the screen edge */
+  edgeGap: 8,
+  /** One full turn, in milliseconds (slow: 48 s) */
+  turnDuration: 48000,
+  /** How far each photo bobs up and down, in px */
+  bobAmount: 6,
+  /** Bobs per full turn (a whole number keeps the loop seamless): 12 = one every 4 s */
+  bobsPerTurn: 12,
+  /** Photos at the back (top) of the oval are this much smaller, for depth */
+  depthScale: 0.12,
+} as const;
+
 /** Icon sizes */
 export const iconSize = { sm: 16, md: 20, lg: 24, xl: 32, xxl: 48 } as const;
 
@@ -128,6 +154,15 @@ export function createTheme(brand: BrandOption = ACTIVE_BRAND) {
     colors: { ...neutralColors, ...brandPalettes[brand] },
     /** Each category's soft tint and icon colour (labels stay ink) */
     categoryColors,
+    /** Glass chips on photos (no blur package): see shared `glass` */
+    glass: {
+      tint: withAlpha(glass.tint, glass.tintAlpha),
+      border: withAlpha(glass.border, glass.borderAlpha),
+      highlight: `linear-gradient(180deg, ${withAlpha(glass.highlight, glass.highlightAlpha)} 0%, ${withAlpha(glass.highlight, 0)} 100%)`,
+      solid: glass.solid,
+      text: glass.text,
+    },
+    orbit,
     /** Login hero background */
     heroGradient: `linear-gradient(160deg, ${brandGradient.from} 0%, ${brandGradient.to} 100%)`,
     spacing,

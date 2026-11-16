@@ -142,6 +142,12 @@ Goal: the app works without the owner's laptop, for a remote testing partner and
 - Tab bar: a visible 1 px `divider` line and a slightly stronger upward shadow (pill unchanged).
 - Log out asks first (`ConfirmDialog`, an in-app Modal: Cancel, tap outside and Android back all close it). Used on the customer, rider and staff screens via `LogOutButton`.
 
+**Design touches: orbit hero and Glass (2026-11-07)**
+- Login hero: six cut-out photos, one per category (rice plate, iced pink drink, headphones, perfume bottle, white supplement bottle, kraft box; Pexels; transparent WebP, 256 px tiles with a soft shadow baked in, light from above-left; about 73 KB in total, in `assets/images/hero/`) slowly circle the wordmark on an oval, each bobbing gently (`HeroOrbit`, Reanimated, one shared clock, transforms only). The list is `src/components/heroOrbitItems.ts`: add or remove photos and the orbit spaces them evenly. Speed, ring size and bob are `theme.orbit`. The tagline sits below the ring so no photo passes over text. Pauses when the screen is not in front or the app is in the background; holds still with Reduce Motion. Replaces the round jollof photo.
+- Image choice after testing on Android: premium feel first, a balanced mix of categories second. Light colours, simple shapes, mostly shot from above, the same light direction and shadow on all six, no logos or readable text, items never rotate. Dark red/brown items with organic edges (zobo, tomatoes and pepper, suya) blended into the violet and were dropped. Cut-outs: the plate is an exact ellipse on its rim; the perfume cap was traced by hand (the background-removal model missed it); moulded marks on the supplement bottle's base were softened.
+- `Glass` component: smoky see-through tint, thin light border, soft top highlight, soft shadow, no blur package. Solid fallback when iPhone's Reduce Transparency is on (Android has no such setting). White text passes AA even over a pure white photo (4.94:1, in the contrast test). Used on vendor photos for the rating, delivery time and "Closed" pills; shown in the dev preview with the solid fallback.
+- Native fingerprint unchanged (no new packages): can ship as an EAS Update.
+
 ## Phase 4: Admin panel, vendor dashboard and seed data
 - Admin: add, approve and suspend vendors and riders. See orders. Edit city fee settings. Basic totals.
 - Vendor dashboard (works on a phone browser): items (name, price, photo, sold out), open/closed toggle

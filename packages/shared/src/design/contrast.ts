@@ -6,11 +6,27 @@ function channel(value: number): number {
   return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
 }
 
-function luminance(hex: string): number {
+function rgb(hex: string): [number, number, number] {
   const match = hex.replace('#', '').match(/^([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i);
   if (!match) throw new Error(`Not a 6-digit hex colour: ${hex}`);
-  const [r, g, b] = [match[1]!, match[2]!, match[3]!].map((part) => channel(parseInt(part, 16)));
+  return [parseInt(match[1]!, 16), parseInt(match[2]!, 16), parseInt(match[3]!, 16)];
+}
+
+function luminance(hex: string): number {
+  const [r, g, b] = rgb(hex).map(channel);
   return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
+}
+
+/** A hex colour as a CSS rgba() string, e.g. withAlpha('#FFFFFF', 0.2). */
+export function withAlpha(hex: string, alpha: number): string {
+  const [r, g, b] = rgb(hex);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+/** The solid colour you see when `top` at `alpha` is laid over `bottom`. */
+export function blend(top: string, alpha: number, bottom: string): string {
+  const t = rgb(top), b = rgb(bottom);
+  return `#${t.map((c, i) => Math.round(c * alpha + b[i]! * (1 - alpha)).toString(16).padStart(2, '0')).join('')}`;
 }
 
 /** Contrast ratio between two colours, from 1 (same) to 21 (black on white). */

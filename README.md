@@ -129,7 +129,13 @@ Guard rails I insisted on: a secret scan on every commit (and across the full hi
 
 ## Credits
 
-- Login photo: jollof rice with chicken and plantain by [Keesha's Kitchen](https://unsplash.com/photos/a-plate-of-food-b4Ht8TQ1JGo) on Unsplash ([Unsplash License](https://unsplash.com/license)).
+- Login screen photos (cut out from the originals), all on Pexels under the [Pexels License](https://www.pexels.com/license/):
+  - Rice plate: [Tamba Budiarsana](https://www.pexels.com/photo/37106991/)
+  - Iced pink drink: [Esra Afsar](https://www.pexels.com/photo/31540293/)
+  - Headphones: [Maria Mileta](https://www.pexels.com/photo/15394136/)
+  - Perfume bottle: [Rendy Ramdani](https://www.pexels.com/photo/12146871/)
+  - White supplement bottle: [Supliful](https://www.pexels.com/photo/13779109/)
+  - Kraft box: [Ron Lach](https://www.pexels.com/photo/9594423/)
 - Font: [Plus Jakarta Sans](https://fonts.google.com/specimen/Plus+Jakarta+Sans) (SIL Open Font License). The wordmark letters are outlines drawn from this font.
 - Icons: [Ionicons](https://ionic.io/ionicons) (MIT License).
 

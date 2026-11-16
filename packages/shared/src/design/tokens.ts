@@ -76,6 +76,25 @@ export const neutralColors = {
   scrim: 'rgba(22, 21, 26, 0.55)',
 } as const;
 
+/**
+ * "Glass" chips and pills on photos, drawn without a blur package: a smoky
+ * see-through tint, a thin light border and a soft highlight along the top.
+ * The tint is dark enough that white text passes WCAG AA even over a pure
+ * white photo (checked in contrast-pairs.ts). `solid` replaces the tint when
+ * the phone asks for less transparency.
+ */
+export const glass = {
+  tint: '#16151A',
+  tintAlpha: 0.66,
+  border: '#FFFFFF',
+  borderAlpha: 0.24,
+  highlight: '#FFFFFF',
+  /** Strength at the very top edge; it fades to nothing by mid-height */
+  highlightAlpha: 0.14,
+  solid: '#3A3940',
+  text: '#FFFFFF',
+} as const;
+
 /** Generous spacing on a 4-point grid. */
 export const spacing = {
   xxs: 4,

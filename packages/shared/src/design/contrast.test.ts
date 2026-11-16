@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { contrastRatio, passesAA } from './contrast.ts';
+import { blend, contrastRatio, passesAA, withAlpha } from './contrast.ts';
 import { contrastPairs } from './contrast-pairs.ts';
 import { BRAND_OPTIONS } from './tokens.ts';
 
@@ -8,6 +8,12 @@ test('contrast maths matches known values', () => {
   assert.equal(contrastRatio('#000000', '#FFFFFF').toFixed(1), '21.0');
   assert.equal(contrastRatio('#FFFFFF', '#FFFFFF').toFixed(1), '1.0');
   assert.equal(contrastRatio('#767676', '#FFFFFF').toFixed(2), '4.54'); // the classic AA grey
+});
+
+test('blend and withAlpha', () => {
+  assert.equal(blend('#000000', 0.5, '#FFFFFF'), '#808080');
+  assert.equal(blend('#16151A', 1, '#FFFFFF'), '#16151a');
+  assert.equal(withAlpha('#FFFFFF', 0.24), 'rgba(255, 255, 255, 0.24)');
 });
 
 for (const brand of BRAND_OPTIONS) {

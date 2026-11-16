@@ -1,5 +1,5 @@
-import { accentOnViolet, brandGradient, brandPalettes, categoryColors, neutralColors, type BrandOption } from './tokens.ts';
-import type { ContrastLevel } from './contrast.ts';
+import { accentOnViolet, brandGradient, brandPalettes, categoryColors, glass, neutralColors, type BrandOption } from './tokens.ts';
+import { blend, type ContrastLevel } from './contrast.ts';
 
 export interface ContrastPair {
   name: string;
@@ -34,6 +34,15 @@ export function contrastPairs(brand: BrandOption): ContrastPair[] {
     { name: 'White text on hero gradient (lightest end)', foreground: b.onPrimary, background: brandGradient.from, level: 'normal' },
     { name: 'Wordmark tick on hero (lightest end, graphic)', foreground: accentOnViolet, background: brandGradient.from, level: 'large' },
     { name: 'Wordmark tick on brand violet (graphic)', foreground: accentOnViolet, background: b.primary, level: 'large' },
+    // Glass on photos, worst case: the photo behind is pure white, and the text
+    // starts where the top highlight is still at half strength.
+    {
+      name: 'White text on glass over a white photo (worst case)',
+      foreground: glass.text,
+      background: blend(glass.highlight, glass.highlightAlpha / 2, blend(glass.tint, glass.tintAlpha, '#FFFFFF')),
+      level: 'normal',
+    },
+    { name: 'White text on solid glass (Reduce Transparency)', foreground: glass.text, background: glass.solid, level: 'normal' },
     ...Object.entries(categoryColors).flatMap(([key, c]) => [
       { name: `${key} icon on its tint (icons need 3:1)`, foreground: c.icon, background: c.soft, level: 'large' as const },
       { name: `${key} label (ink) on its tint`, foreground: n.text, background: c.soft, level: 'normal' as const },

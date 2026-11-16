@@ -21,6 +21,7 @@ import { PromoBadge } from '@/components/PromoBadge';
 import { SearchBar } from '@/components/SearchBar';
 import { CategoryGridSkeleton, Skeleton, VendorCardSkeleton } from '@/components/Skeleton';
 import { EmptyState, ErrorState } from '@/components/States';
+import { Glass } from '@/components/Glass';
 import { TabBarView } from '@/components/TabBar';
 import { Screen } from '@/components/ui';
 import { VendorCard } from '@/components/VendorCard';
@@ -41,7 +42,7 @@ export default function DevPreviewScreen() {
   const [notice, setNotice] = useState<string | null>(null);
   const hideNotice = useCallback(() => setNotice(null), []);
 
-  const vendorMeta = (v: SampleVendor) => [en.vendor.minutes(v.minMinutes, v.maxMinutes), en.vendor.deliveryFee(formatMoney(v.deliveryFee, NAIRA))];
+  const vendorMeta = (v: SampleVendor) => [en.vendor.deliveryFee(formatMoney(v.deliveryFee, NAIRA))];
   const vendorCard = (v: SampleVendor) => (
     <VendorCard
       key={v.id}
@@ -50,6 +51,7 @@ export default function DevPreviewScreen() {
       imageUri={unsplash(v.photo)}
       placeholder={unsplashPlaceholder(v.photo)}
       meta={vendorMeta(v)}
+      etaLabel={en.vendor.minutes(v.minMinutes, v.maxMinutes)}
       rating={v.rating}
       promo={v.promoPercent ? p.promo(v.promoPercent) : undefined}
       closedLabel={v.isOpen ? undefined : `${en.vendor.closed} · ${en.vendor.opensAt(SAMPLE_OPENS_AT)}`}
@@ -171,6 +173,41 @@ export default function DevPreviewScreen() {
       <Section title={p.vendors}>
         {SAMPLE_VENDORS.map(vendorCard)}
         <VendorCardSkeleton />
+      </Section>
+
+      <Section title={p.glass}>
+        <AppText variant="caption" tone="muted">
+          {p.glassNote}
+        </AppText>
+        {[false, true].map((solid) => (
+          <View key={String(solid)} style={styles.column}>
+            <AppText variant="caption" tone="muted">
+              {solid ? p.glassSolid : p.glassTint}
+            </AppText>
+            <View>
+              <AppImage uri={unsplash(SAMPLE_VENDORS[0]!.photo, 900)} placeholder={unsplashPlaceholder(SAMPLE_VENDORS[0]!.photo)} ratio="cover" />
+              <View style={styles.glassRow}>
+                <Glass solid={solid}>
+                  <Icon name="star" size="sm" color={theme.glass.text} />
+                  <AppText variant="label" style={styles.onGlass}>
+                    {SAMPLE_VENDORS[0]!.rating?.toFixed(1)}
+                  </AppText>
+                </Glass>
+                <Glass solid={solid}>
+                  <Icon name="time-outline" size="sm" color={theme.glass.text} />
+                  <AppText variant="label" style={styles.onGlass}>
+                    {en.vendor.minutes(20, 30)}
+                  </AppText>
+                </Glass>
+                <Glass solid={solid}>
+                  <AppText variant="label" style={styles.onGlass}>
+                    {en.vendor.closed}
+                  </AppText>
+                </Glass>
+              </View>
+            </View>
+          </View>
+        ))}
       </Section>
 
       <Section title={p.images}>
@@ -310,4 +347,6 @@ const makeStyles = (theme: Theme) =>
     iconLarge: { alignSelf: 'center', alignItems: 'center', justifyContent: 'center' },
     safeZone: { position: 'absolute', borderWidth: theme.sizes.nudge, borderStyle: 'dashed', borderColor: theme.colors.onPrimary },
     heroFrame: { borderRadius: theme.radius.lg, overflow: 'hidden' },
+    glassRow: { position: 'absolute', left: theme.spacing.sm, right: theme.spacing.sm, bottom: theme.spacing.sm, flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.xs },
+    onGlass: { color: theme.glass.text },
   });
