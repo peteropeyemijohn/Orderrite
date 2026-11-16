@@ -13,12 +13,13 @@ It is built to grow: countries, cities, currencies and fees are data, not code.
 **Project docs:** [product requirements (PRD)](docs/PRD.md) · [phase list and status](docs/PHASES.md)
 
 <p>
-  <img src="docs/screenshots/login.png" alt="Login screen: Orderrite wordmark, tagline and a phone number field" width="260">
-  &nbsp;&nbsp;
-  <img src="docs/screenshots/home.png" alt="Home screen: a large Food tile, other categories marked Soon, and the bottom tab bar" width="260">
+  <img src="docs/screenshots/login.png" alt="Login screen: Orderrite wordmark with product photos circling it on a violet gradient, the tagline, and a phone number field" width="200">
+  <img src="docs/screenshots/home.png" alt="Home screen: greeting, search bar, a large Food tile, other categories marked Soon, and the bottom tab bar" width="200">
+  <img src="docs/screenshots/orders.png" alt="Orders screen: empty state with a Browse restaurants button" width="200">
+  <img src="docs/screenshots/account.png" alt="Account screen: demo customer card with a formatted phone number and a Demo account chip, and a Log out button" width="200">
 </p>
 
-<sub>Screenshots from the app's web preview. On Android the login header is a violet gradient.</sub>
+<sub>Screenshots from the installed Android app on a real phone.</sub>
 
 ## Try the live demo
 
