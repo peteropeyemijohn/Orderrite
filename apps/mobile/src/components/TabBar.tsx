@@ -98,7 +98,7 @@ type TabBarProps = Parameters<NonNullable<ComponentProps<typeof Tabs>['tabBar']>
 
 /** Connects TabBarView to Expo Router's tabs. Icons are given per route name. */
 export function makeTabBar(icons: Record<string, { icon: IconName; iconActive: IconName }>) {
-  return function AppTabBar({ state, descriptors, navigation, insets }: TabBarProps) {
+  return function AppTabBar({ state, descriptors, emitter, navigateToTab, insets }: TabBarProps) {
     const items: TabItem[] = state.routes.map((route) => {
       const options = descriptors[route.key]?.options;
       const badge = options?.tabBarBadge;
@@ -116,10 +116,9 @@ export function makeTabBar(icons: Record<string, { icon: IconName; iconActive: I
         activeKey={state.routes[state.index]?.key ?? ''}
         bottomInset={insets.bottom}
         onSelect={(key) => {
-          const route = state.routes.find((r) => r.key === key);
-          if (!route) return;
-          const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
-          if (!event.defaultPrevented && state.routes[state.index]?.key !== key) navigation.navigate(route.name);
+          // Same as Expo Router's own tab bar: announce the press, then switch tabs.
+          const event = emitter.emit({ type: 'tabPress', target: key, canPreventDefault: true });
+          if (!event.defaultPrevented && state.routes[state.index]?.key !== key) navigateToTab(key);
         }}
       />
     );

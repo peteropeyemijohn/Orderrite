@@ -1,7 +1,7 @@
 import { useFocusEffect } from 'expo-router';
 import { Image } from 'expo-image';
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
-import { AppState, StyleSheet, View, type ImageSourcePropType, type LayoutChangeEvent } from 'react-native';
+import { AppState, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import Animated, {
   cancelAnimation,
   Easing,
@@ -14,6 +14,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useStyles, useTheme } from '@/theme/ThemeProvider';
 import type { Theme } from '@/theme/theme';
+import type { HeroOrbitItem } from './heroOrbitItems';
 
 /**
  * Photos slowly circling whatever is in the middle (the wordmark), each one
@@ -23,7 +24,7 @@ import type { Theme } from '@/theme/theme';
  * It pauses when the screen is not in front or the app is in the background,
  * and holds still in a neat ring when the phone's Reduce Motion is on.
  */
-export function HeroOrbit({ items, children }: { items: ImageSourcePropType[]; children: ReactNode }) {
+export function HeroOrbit({ items, children }: { items: HeroOrbitItem[]; children: ReactNode }) {
   const { orbit } = useTheme();
   const styles = useStyles(makeStyles);
   const reduceMotion = useReducedMotion();
@@ -81,7 +82,7 @@ function OrbitItem({
   turns,
   radiusX,
 }: {
-  source: ImageSourcePropType;
+  source: HeroOrbitItem;
   index: number;
   count: number;
   turns: SharedValue<number>;

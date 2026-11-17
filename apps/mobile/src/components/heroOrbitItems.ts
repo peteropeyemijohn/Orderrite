@@ -1,4 +1,5 @@
-import type { ImageSourcePropType } from 'react-native';
+/** A bundled image: `require('…')` gives a number that both React Native and expo-image accept. */
+export type HeroOrbitItem = number;
 
 /**
  * Photos that circle the wordmark on the login hero. Add, remove or reorder
@@ -9,7 +10,7 @@ import type { ImageSourcePropType } from 'react-native';
  * README. Keep new ones light, simple in shape, small, and free of logos,
  * readable text and people. Items move but never rotate.
  */
-export const HERO_ORBIT_ITEMS: ImageSourcePropType[] = [
+export const HERO_ORBIT_ITEMS: HeroOrbitItem[] = [
   require('../../assets/images/hero/rice-plate.webp'),
   require('../../assets/images/hero/drink.webp'),
   require('../../assets/images/hero/headphones.webp'),

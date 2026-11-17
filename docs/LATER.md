@@ -18,6 +18,7 @@ Ideas and features that are **not** in Plan A. When something new comes up durin
 - Reorder from order history
 
 ## Technical improvements for later
+- Orbit does not react to Reduce Motion changes while the app is open; only on restart.
 - Deploy the API on Render with Docker (the image in `apps/api/Dockerfile` already builds and runs in CI). Today Render builds with `scripts/render-build.sh` instead.
 - **SDK 58 build: add `expo-blur`** (native, needs a new build) for true frosted glass: the photo behind a Glass chip is blurred, not just tinted, so the tint can be lighter and the chips feel deeper. Keep today's no-blur Glass as the fallback on slow Android phones (Android blur is experimental and costs performance) and with Reduce Transparency. Glass gains a `blur` option; no screen changes.
 - **At the next planned EAS build:** update `expo` and `expo-router` to the latest SDK 57 patch versions (`pnpm exec expo install --fix` in apps/mobile). Held back in Phase 3 because it changes the native fingerprint, so it can't ship as an EAS Update. expo-doctor reports this until then.
