@@ -152,7 +152,7 @@ Goal: the app works without the owner's laptop, for a remote testing partner and
 Outside the phase list. Reason: Expo Go on iPhone only opens SDK 58 projects. No new features.
 - Expo 58, React Native 0.88, React 19.3, Reanimated 4.7, Expo Router 58 (`expo install --fix`, expo-doctor clean). Code fixes: the custom tab bar uses Expo Router 58's `emitter`/`navigateToTab`; orbit images are typed as bundled images.
 - New app icon, Android adaptive/themed icon and favicon from `assets/brand/icon.svg`; violet splash (#5B3DF5) with the white mark.
-- `expo-navigation-bar` plugin: `enforceContrast: false` (grey band gone), `style: 'dark'`. Open issue: the buttons still show white on white screens (see LATER).
+- `expo-navigation-bar` plugin: `enforceContrast: false` (grey band gone), `style: 'dark'`. In phone Dark mode the buttons still started white, so `src/theme/navigationBar.ts` sets dark buttons at runtime (JS only, ships as an EAS Update). The app is light-only (`userInterfaceStyle: "light"`, applied by expo-system-ui as night mode off). Open until verified (see LATER).
 - `expo-blur` installed for later (not used yet).
 - Tested in Expo Go SDK 58 on Android and iPhone; Android APK built with EAS (preview, build 349b2612, runtime `f5a3e21d…`). The old SDK 57 APK (runtime `1b9df0e7…`) cannot receive SDK 58 updates.
 - Cold start: the app now waits up to 120 s for the free API server to wake (checks `/health/live` every few seconds, shared by all requests) before showing "Can't reach Orderrite". Tested with a fake sleepy server: waking after 75 s, never waking (error at 120 s, Try again works) and already awake.

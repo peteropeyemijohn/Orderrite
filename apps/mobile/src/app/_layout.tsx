@@ -12,6 +12,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { AuthProvider, useAuth } from '@/auth/AuthProvider';
 import { wakeApi } from '@/lib/api';
+import { keepNavigationBarButtonsDark, useDarkNavigationBarButtons } from '@/theme/navigationBar';
 import { ThemeProvider, useTheme } from '@/theme/ThemeProvider';
 
 // Start waking the free API server as soon as the app opens.
@@ -61,9 +62,11 @@ export default function RootLayout() {
     PlusJakartaSans_800ExtraBold,
   });
   const ready = fontsLoaded || Boolean(fontError); // if the font fails, carry on with the system font
+  useDarkNavigationBarButtons();
 
   useEffect(() => {
-    if (ready) void SplashScreen.hideAsync();
+    // Set the navigation bar buttons again once the splash is gone (it can leave them white).
+    if (ready) void SplashScreen.hideAsync().finally(keepNavigationBarButtonsDark);
   }, [ready]);
 
   if (!ready) return null;
