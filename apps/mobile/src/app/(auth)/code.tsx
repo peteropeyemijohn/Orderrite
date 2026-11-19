@@ -79,7 +79,7 @@ export default function CodeScreen() {
         style={styles.codeInput}
       />
       {error && <ErrorText>{error}</ErrorText>}
-      {slow && <Body muted>{en.common.firstLoadSlow}</Body>}
+      {slow && <Body muted>{en.common.serverWaking}</Body>}
       <Button label={busy ? en.auth.verifying : en.auth.verify} onPress={() => void verify()} loading={busy} disabled={code.length !== 6} size="lg" />
       <Button
         variant="secondary"

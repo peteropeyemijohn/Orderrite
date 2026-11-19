@@ -26,12 +26,14 @@ It is built to grow: countries, cities, currencies and fees are data, not code.
 | | Link |
 |---|---|
 | Web dashboard (sign-in works; admin and vendor pages coming) | https://orderrite-apps.vercel.app |
-| Android app (APK) | https://expo.dev/accounts/kalprice5/projects/orderrite/builds/cd624097-c278-459c-ac96-6e825a4e1b43 |
+| Android app (APK) | https://expo.dev/accounts/kalprice5/projects/orderrite/builds/349b2612-66d4-4044-8ce1-30c3d9ccc424 |
 | API health check | https://orderrite-api.onrender.com/health |
+
+If the install page shows an error, open the link in another browser.
 
 The APK link may expire. The web demo keeps working.
 
-⏳ **The first load can take about a minute.** The demo runs on free hosting that sleeps when nobody is using it. After it wakes up, it is fast.
+⏳ **The first load after idle can take up to a minute or two while the free server wakes up.** The demo runs on free hosting that sleeps when nobody is using it. After it wakes up, it is fast.
 
 ### Demo logins
 
@@ -46,7 +48,7 @@ Everything on the demo uses the sign-in code **`123456`**.
 
 The app and the dashboard show one-tap buttons for these accounts. You can also sign in with any new phone number using `123456`. New numbers become customer accounts. The demo uses its own database and contains no real people's data.
 
-Installing the Android app: open the APK link on an Android phone, tap **Install**, and allow "install unknown apps" when asked. If Google Play Protect warns about an unknown app, choose **More details → Install anyway** (normal for test apps outside the Play Store). There is no iPhone build yet (that needs a paid Apple developer account).
+Installing the Android app: open the APK link on an Android phone, tap **Install**, and allow "install unknown apps" when asked. If Google Play Protect warns about an unknown app, choose **More details → Install anyway** (normal for test apps outside the Play Store). There is no iPhone build yet (that needs a paid Apple developer account), but the app runs on an iPhone in **Expo Go (SDK 58)** for testing.
 
 ## Tech stack
 

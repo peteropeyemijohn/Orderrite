@@ -79,7 +79,7 @@ export default function PhoneScreen() {
         </View>
 
         {error && <ErrorText>{error}</ErrorText>}
-        {slow && <Body muted>{en.common.firstLoadSlow}</Body>}
+        {slow && <Body muted>{en.common.serverWaking}</Body>}
         <Button
           label={sending ? en.auth.sending : en.auth.sendCode}
           onPress={() => void sendCode(internationalNumber(phone, selected, defaultCountry.code))}

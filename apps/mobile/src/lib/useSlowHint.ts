@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 /**
  * True when something has been busy for more than 5 seconds. Used to explain
- * that the free server may be waking up (this can take up to a minute).
+ * that the free server may be waking up (this can take a minute or two).
  */
 export function useSlowHint(busy: boolean, afterMs = 5000): boolean {
   const [slow, setSlow] = useState(false);

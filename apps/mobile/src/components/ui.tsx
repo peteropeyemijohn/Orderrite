@@ -135,7 +135,7 @@ export function LoadingView() {
         <Spinner size="lg" color={theme.colors.primary} />
       </View>
       <AppText tone="muted" align="center">
-        {slow ? en.common.firstLoadSlow : en.common.loading}
+        {slow ? en.common.serverWaking : en.common.loading}
       </AppText>
     </Screen>
   );

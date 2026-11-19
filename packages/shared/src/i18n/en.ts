@@ -9,6 +9,8 @@ export const en = {
     somethingWrong: 'Something went wrong. Please try again.',
     cantReachServer: "Can't reach Orderrite right now. Check your internet and try again.",
     firstLoadSlow: 'The server may be waking up. This can take up to a minute.',
+    /** Mobile: the app keeps waiting up to two minutes for the free server to wake. */
+    serverWaking: 'The server may be waking up. This can take a minute or two.',
   },
   auth: {
     phoneTitle: 'Your phone number',

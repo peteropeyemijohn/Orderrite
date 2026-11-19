@@ -9,8 +9,8 @@ Ideas and features that are **not** in Plan A. When something new comes up durin
 
 ## Customer experience (suggested in Phase 3)
 - Delivery address picker on the home screen ("Delivering to …", change address)
-- Replace the app icon and splash screen with the chosen icon (`assets/brand/icon.svg`, tick inside the "o") and wordmark (native change: next planned EAS build)
-- The Android navigation bar shows as grey in the installed app (it was white in Expo Go); review at the SDK 58 build.
+- Android navigation bar: the grey band is gone in the SDK 58 APK (`enforceContrast: false`), but the back/home/recents buttons show white on our white screens instead of dark. Open: fix being investigated.
+- After the violet splash, a white loading screen shows while the app starts. Hold the splash until the first screen is ready, or make the loading screen violet.
 
 ## Moved out of Plan A
 - Push notifications for order updates (Firebase Cloud Messaging)
@@ -20,8 +20,7 @@ Ideas and features that are **not** in Plan A. When something new comes up durin
 ## Technical improvements for later
 - Orbit does not react to Reduce Motion changes while the app is open; only on restart.
 - Deploy the API on Render with Docker (the image in `apps/api/Dockerfile` already builds and runs in CI). Today Render builds with `scripts/render-build.sh` instead.
-- **SDK 58 build: add `expo-blur`** (native, needs a new build) for true frosted glass: the photo behind a Glass chip is blurred, not just tinted, so the tint can be lighter and the chips feel deeper. Keep today's no-blur Glass as the fallback on slow Android phones (Android blur is experimental and costs performance) and with Reduce Transparency. Glass gains a `blur` option; no screen changes.
-- **At the next planned EAS build:** update `expo` and `expo-router` to the latest SDK 57 patch versions (`pnpm exec expo install --fix` in apps/mobile). Held back in Phase 3 because it changes the native fingerprint, so it can't ship as an EAS Update. expo-doctor reports this until then.
+- **Use `expo-blur`** (already installed in the SDK 58 build, not used yet; ships as an EAS Update) for true frosted glass: the photo behind a Glass chip is blurred, not just tinted, so the tint can be lighter and the chips feel deeper. Keep today's no-blur Glass as the fallback on slow Android phones (Android blur is experimental and costs performance) and with Reduce Transparency. Glass gains a `blur` option; no screen changes.
 - Shared rate-limit storage (e.g. Redis) when the API runs on more than one server. Per-IP limits are kept in memory today; per-phone limits are already in the database.
 - "Log out of all devices" and a list of signed-in devices
 - Clean up old sign-in codes and expired refresh tokens on a schedule

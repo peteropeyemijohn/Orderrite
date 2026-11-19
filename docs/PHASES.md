@@ -148,6 +148,15 @@ Goal: the app works without the owner's laptop, for a remote testing partner and
 - `Glass` component: smoky see-through tint, thin light border, soft top highlight, soft shadow, no blur package. Solid fallback when iPhone's Reduce Transparency is on (Android has no such setting). White text passes AA even over a pure white photo (4.94:1, in the contrast test). Used on vendor photos for the rating, delivery time and "Closed" pills; shown in the dev preview with the solid fallback.
 - Native fingerprint unchanged (no new packages): can ship as an EAS Update.
 
+## Maintenance: Expo SDK 58 upgrade (2026-11-19, branch `sdk-58-upgrade`)
+Outside the phase list. Reason: Expo Go on iPhone only opens SDK 58 projects. No new features.
+- Expo 58, React Native 0.88, React 19.3, Reanimated 4.7, Expo Router 58 (`expo install --fix`, expo-doctor clean). Code fixes: the custom tab bar uses Expo Router 58's `emitter`/`navigateToTab`; orbit images are typed as bundled images.
+- New app icon, Android adaptive/themed icon and favicon from `assets/brand/icon.svg`; violet splash (#5B3DF5) with the white mark.
+- `expo-navigation-bar` plugin: `enforceContrast: false` (grey band gone), `style: 'dark'`. Open issue: the buttons still show white on white screens (see LATER).
+- `expo-blur` installed for later (not used yet).
+- Tested in Expo Go SDK 58 on Android and iPhone; Android APK built with EAS (preview, build 349b2612, runtime `f5a3e21d…`). The old SDK 57 APK (runtime `1b9df0e7…`) cannot receive SDK 58 updates.
+- Cold start: the app now waits up to 120 s for the free API server to wake (checks `/health/live` every few seconds, shared by all requests) before showing "Can't reach Orderrite". Tested with a fake sleepy server: waking after 75 s, never waking (error at 120 s, Try again works) and already awake.
+
 ## Phase 4: Admin panel, vendor dashboard and seed data
 - Admin: add, approve and suspend vendors and riders. See orders. Edit city fee settings. Basic totals.
 - Vendor dashboard (works on a phone browser): items (name, price, photo, sold out), open/closed toggle
