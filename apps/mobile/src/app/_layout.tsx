@@ -9,15 +9,15 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
 import { AuthProvider, useAuth } from '@/auth/AuthProvider';
 import { wakeApi } from '@/lib/api';
-import { keepNavigationBarButtonsDark, useDarkNavigationBarButtons } from '@/theme/navigationBar';
+import { StartupScreen } from '@/startup/StartupScreen';
+import { useDarkNavigationBarButtons } from '@/theme/navigationBar';
 import { ThemeProvider, useTheme } from '@/theme/ThemeProvider';
 
 // Start waking the free API server as soon as the app opens.
 wakeApi();
-// Keep the splash screen up until the font has loaded (no flash of the wrong font).
+// Keep the splash screen up until the first screen is ready (StartupScreen hides it).
 void SplashScreen.preventAutoHideAsync();
 
 /**
@@ -64,17 +64,14 @@ export default function RootLayout() {
   const ready = fontsLoaded || Boolean(fontError); // if the font fails, carry on with the system font
   useDarkNavigationBarButtons();
 
-  useEffect(() => {
-    // Set the navigation bar buttons again once the splash is gone (it can leave them white).
-    if (ready) void SplashScreen.hideAsync().finally(keepNavigationBarButtonsDark);
-  }, [ready]);
-
   if (!ready) return null;
   return (
     <ThemeProvider>
       <AuthProvider>
         <StatusBar style="dark" />
         <RootStack />
+        {/* Violet cover until the first screen is ready (no white loading screen). */}
+        <StartupScreen />
       </AuthProvider>
     </ThemeProvider>
   );

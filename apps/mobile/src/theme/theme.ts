@@ -13,6 +13,7 @@ import {
   neutralColors,
   radius,
   spacing,
+  splash,
   typeScale,
   withAlpha,
   type BrandOption,
@@ -145,6 +146,23 @@ export const orbit = {
   depthScale: 0.12,
 } as const;
 
+/**
+ * The violet start-up screen (src/startup): it copies the native splash while the
+ * app gets ready, then fades into the first screen.
+ */
+export const startup = {
+  /** Same size and place as the native splash mark (checked against app.json by a test) */
+  markSize: splash.markSize,
+  /** How long the native splash waits for the app before the waking-up hint takes over */
+  holdBeforeHint: 3000,
+  /** Fade from the splash or the violet screen into the app (also the native splash fade) */
+  fade: 400,
+  /** Fade-in of the waking-up hint */
+  hintFade: 300,
+  /** Safety net: never stay on the violet screen longer than this (the wake wait gives up at 120 s) */
+  maxWait: 130_000,
+} as const;
+
 /** Icon sizes */
 export const iconSize = { sm: 16, md: 20, lg: 24, xl: 32, xxl: 48 } as const;
 
@@ -163,6 +181,7 @@ export function createTheme(brand: BrandOption = ACTIVE_BRAND) {
       text: glass.text,
     },
     orbit,
+    startup,
     /** Login hero background */
     heroGradient: `linear-gradient(160deg, ${brandGradient.from} 0%, ${brandGradient.to} 100%)`,
     spacing,

@@ -11,24 +11,43 @@ import { Appearance, AppState, Platform } from 'react-native';
  * at runtime: after the splash, and whenever the app returns to the front or
  * the phone's theme changes.
  *
+ * The violet start-up screen asks for white buttons while it shows. It is the
+ * only place that does, and it always asks for dark again when it leaves
+ * (see src/startup/StartupScreen.tsx).
+ *
  * We call the native module directly: the package's `setStyle()` remembers the
  * last value and skips repeats, but repeats are exactly what we need here.
- * "dark" = dark buttons (the module's own comment: dark content -> light background).
+ * The native style names the background: "dark" = dark buttons (for a light
+ * background), "light" = white buttons.
  */
 const NavigationBarNative =
   Platform.OS === 'android' ? requireOptionalNativeModule<{ setStyle(style: 'dark' | 'light'): Promise<void> }>('ExpoNavigationBar') : null;
 
-export function keepNavigationBarButtonsDark(): void {
-  NavigationBarNative?.setStyle('dark').catch(() => undefined);
+type ButtonColour = 'dark' | 'white';
+
+/** The colour the buttons should have now. Re-applied on return to the app and on theme change. */
+let wanted: ButtonColour = 'dark';
+
+function apply(): void {
+  NavigationBarNative?.setStyle(wanted === 'white' ? 'light' : 'dark').catch(() => undefined);
 }
 
-/** Re-applies dark buttons when the app comes back to the front or the phone's Light/Dark mode changes. */
+export function setNavigationBarButtons(colour: ButtonColour): void {
+  wanted = colour;
+  apply();
+}
+
+export function keepNavigationBarButtonsDark(): void {
+  setNavigationBarButtons('dark');
+}
+
+/** Re-applies the wanted button colour when the app comes back to the front or the phone's Light/Dark mode changes. */
 export function useDarkNavigationBarButtons(): void {
   useEffect(() => {
     if (!NavigationBarNative) return;
-    keepNavigationBarButtonsDark();
-    const app = AppState.addEventListener('change', (state) => state === 'active' && keepNavigationBarButtonsDark());
-    const theme = Appearance.addChangeListener(keepNavigationBarButtonsDark);
+    apply();
+    const app = AppState.addEventListener('change', (state) => state === 'active' && apply());
+    const theme = Appearance.addChangeListener(apply);
     return () => {
       app.remove();
       theme.remove();

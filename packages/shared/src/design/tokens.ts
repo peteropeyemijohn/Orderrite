@@ -137,3 +137,13 @@ export const imageRatios = {
   square: 1,
   tile: 4 / 3,
 } as const;
+
+/**
+ * The native splash screen (set in apps/mobile/app.json, expo-splash-screen plugin).
+ * The app's own violet start-up screen copies it exactly, so the change from one to
+ * the other is invisible. A test checks that app.json still matches these values.
+ */
+export const splash = {
+  /** "imageWidth" in app.json: the white mark is this wide (dp), centred on the full screen */
+  markSize: 120,
+} as const;

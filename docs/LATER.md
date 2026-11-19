@@ -9,8 +9,7 @@ Ideas and features that are **not** in Plan A. When something new comes up durin
 
 ## Customer experience (suggested in Phase 3)
 - Delivery address picker on the home screen ("Delivering to …", change address)
-- Android navigation bar: the grey band is gone in the SDK 58 APK (`enforceContrast: false`). The buttons were white on our white screens when the phone is in Dark mode (dark and correct in Light mode). JS fix on the branch (`src/theme/navigationBar.ts`: dark buttons set at runtime after the splash, on return to the app and on theme change); open until verified on a phone in both modes. If it is not enough, the native fallback (new build) is `android:windowLightNavigationBar=true` in a values-night theme via a small config plugin.
-- After the violet splash, a white loading screen shows while the app starts. Hold the splash until the first screen is ready, or make the loading screen violet.
+- After the violet splash, a white loading screen showed while the app started. Fix on branch `smooth-startup` (`src/startup/StartupScreen.tsx`: the splash stays until the first screen is ready, then a violet screen with the waking-up hint; fades into the app). Open until verified on the APK.
 
 ## Moved out of Plan A
 - Push notifications for order updates (Firebase Cloud Messaging)

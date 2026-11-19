@@ -2,10 +2,13 @@ import { Redirect } from 'expo-router';
 import { en } from 'shared';
 import { useAuth } from '@/auth/AuthProvider';
 import { ErrorView, LoadingView } from '@/components/ui';
+import { useStartupReady } from '@/startup/startupReady';
 
 /** Start screen: sends each person to the right place. */
 export default function Index() {
   const { status, user, retry } = useAuth();
+  // Signed-out visitors go on to the login, which says "ready" itself once it has its settings.
+  useStartupReady(status === 'signedIn' || status === 'error');
 
   if (status === 'loading') return <LoadingView />;
   if (status === 'error') return <ErrorView message={en.common.cantReachServer} onRetry={retry} />;

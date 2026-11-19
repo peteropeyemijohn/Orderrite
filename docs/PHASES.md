@@ -152,10 +152,18 @@ Goal: the app works without the owner's laptop, for a remote testing partner and
 Outside the phase list. Reason: Expo Go on iPhone only opens SDK 58 projects. No new features.
 - Expo 58, React Native 0.88, React 19.3, Reanimated 4.7, Expo Router 58 (`expo install --fix`, expo-doctor clean). Code fixes: the custom tab bar uses Expo Router 58's `emitter`/`navigateToTab`; orbit images are typed as bundled images.
 - New app icon, Android adaptive/themed icon and favicon from `assets/brand/icon.svg`; violet splash (#5B3DF5) with the white mark.
-- `expo-navigation-bar` plugin: `enforceContrast: false` (grey band gone), `style: 'dark'`. In phone Dark mode the buttons still started white, so `src/theme/navigationBar.ts` sets dark buttons at runtime (JS only, ships as an EAS Update). The app is light-only (`userInterfaceStyle: "light"`, applied by expo-system-ui as night mode off). Open until verified (see LATER).
+- `expo-navigation-bar` plugin: `enforceContrast: false` (grey band gone), `style: 'dark'`. In phone Dark mode the buttons still started white, so `src/theme/navigationBar.ts` sets dark buttons at runtime (JS only, ships as an EAS Update). The app is light-only (`userInterfaceStyle: "light"`, applied by expo-system-ui as night mode off). Verified on the SDK 58 APK after the EAS Update: dark buttons in both phone Light and Dark mode. (Unused native fallback if a future Android version ignores it: `android:windowLightNavigationBar=true` in a values-night theme via a config plugin, new build.)
 - `expo-blur` installed for later (not used yet).
 - Tested in Expo Go SDK 58 on Android and iPhone; Android APK built with EAS (preview, build 349b2612, runtime `f5a3e21d…`). The old SDK 57 APK (runtime `1b9df0e7…`) cannot receive SDK 58 updates.
-- Cold start: the app now waits up to 120 s for the free API server to wake (checks `/health/live` every few seconds, shared by all requests) before showing "Can't reach Orderrite". Tested with a fake sleepy server: waking after 75 s, never waking (error at 120 s, Try again works) and already awake.
+- Cold start (verified on the phone after the EAS Update): the app now waits up to 120 s for the free API server to wake (checks `/health/live` every few seconds, shared by all requests) before showing "Can't reach Orderrite". Tested with a fake sleepy server: waking after 75 s, never waking (error at 120 s, Try again works) and already awake.
+
+## Maintenance: smooth start-up (2026-11-19, branch `smooth-startup`)
+JavaScript only (EAS Update, fingerprint unchanged `f5a3e21d…`). No white loading screen between the splash and the first screen.
+- The native violet splash stays until the first screen is ready (login settings loaded, session restored, or the 120 s wait ended with an error), then fades out over 400 ms (`SplashScreen.setOptions`; Android always fades and reads only the duration).
+- Not ready after 3 s: the splash fades into an identical in-app violet screen (`src/startup/StartupScreen.tsx`, same mark size and place, checked against app.json by a shared test), the waking-up hint fades in, and the screen fades out (400 ms) when the server answers. Reduce Motion: instant switches. Safety net: never longer than 130 s.
+- Android buttons are white on the violet screen and set dark again when it leaves (start and end of the fade, after the splash, and 1 s later); return to the app and theme changes re-apply the wanted colour.
+- Screens report "ready" with `useStartupReady()` (start screen, login).
+- Tested in the web preview against a fake sleepy server, recording every frame: server awake, waking after 8 s and 20 s, never waking (error at 121 s, Try again works) and Reduce Motion. No white or empty frame after the violet screen appeared in any run.
 
 ## Phase 4: Admin panel, vendor dashboard and seed data
 - Admin: add, approve and suspend vendors and riders. See orders. Edit city fee settings. Basic totals.

@@ -10,6 +10,7 @@ import { LoginHero } from '@/components/LoginHero';
 import { Body, ErrorText, ErrorView, Input, LoadingView, Screen, Title } from '@/components/ui';
 import { usePublicConfig } from '@/config/usePublicConfig';
 import { apiRequest, errorBody } from '@/lib/api';
+import { useStartupReady } from '@/startup/startupReady';
 import { useSlowHint } from '@/lib/useSlowHint';
 import { useStyles } from '@/theme/ThemeProvider';
 import type { Theme } from '@/theme/theme';
@@ -22,6 +23,8 @@ export default function PhoneScreen() {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const slow = useSlowHint(sending);
+  // The violet start-up screen fades into this one once the settings (or the error) are here.
+  useStartupReady(state.status !== 'loading');
 
   if (state.status === 'loading') return <LoadingView />;
   if (state.status === 'error') return <ErrorView message={en.common.cantReachServer} onRetry={reload} />;
